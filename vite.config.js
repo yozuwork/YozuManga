@@ -6,6 +6,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base:"/YozuManga/", //github 路徑需要
   plugins: [
     vue(),
     vueDevTools(),
