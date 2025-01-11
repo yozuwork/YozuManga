@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "deploy": "npm run build && git checkout gh-pages && cp -r dist/* . && git add . && git commit -m '更新部署' && git push origin gh-pages && git checkout main",
+    "deploy": "vite build && gh-pages -d dist",
     "preview": "vite preview",
     "lint": "eslint . --fix",
     "format": "prettier --write src/"
@@ -26,6 +26,7 @@
     "@vue/eslint-config-prettier": "^10.1.0",
     "eslint": "^9.14.0",
     "eslint-plugin-vue": "^9.30.0",
+    "gh-pages": "^6.3.0",
     "prettier": "^3.3.3",
     "sass": "^1.83.1",
     "vite": "^6.0.5",
