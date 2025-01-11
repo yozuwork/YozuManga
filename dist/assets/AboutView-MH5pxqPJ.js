@@ -1,1 +1,0 @@
-import{_ as o,c as t,a as s,o as a}from"./index-DWEdtsMW.js";const c={},n={class:"about"};function r(_,e){return a(),t("div",n,e[0]||(e[0]=[s("h1",null,"關於我們與台灣正版授權介紹",-1)]))}const d=o(c,[["render",r]]);export{d as default};
