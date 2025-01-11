@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "deploy": "npm run build && git checkout gh-pages && cp -r dist/* . && git add . && git commit -m '更新部署' && git push origin gh-pages && git checkout main",
     "preview": "vite preview",
     "lint": "eslint . --fix",
     "format": "prettier --write src/"
