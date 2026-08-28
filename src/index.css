@@ -1,7 +1,15 @@
 :root {
+  --ink: #181818;
+  --paper: #f3efe6;
+  --marker: #e8c34a;
+  --pink: #e39aa0;
+  --mint: #9fc6ab;
+  --gray: #8f897a;
+  --card: #fffdf7;
+
   font-family: "Klee One", "Noto Sans TC", system-ui, sans-serif;
-  color: #181818;
-  background: #f3efe6;
+  color: var(--ink);
+  background: var(--paper);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
@@ -19,6 +27,12 @@ body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
+  background-color: var(--paper);
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.015) 0 1px,
+    transparent 1px 3px
+  );
 }
 
 button,

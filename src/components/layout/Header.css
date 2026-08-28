@@ -1,0 +1,154 @@
+.site-header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 20px 34px 14px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink);
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+.site-nav {
+  display: flex;
+  gap: 10px;
+  margin-left: 10px;
+}
+
+.nav-link {
+  padding: 8px 18px;
+  border: 2.5px solid var(--ink);
+  border-radius: 14px 16px 15px 13px / 16px 12px 18px 14px;
+  background: var(--card);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  transform: rotate(-1deg);
+  transition: transform 0.12s, background 0.12s;
+  user-select: none;
+}
+
+.nav-link:nth-child(2) {
+  transform: rotate(1.2deg);
+}
+
+.nav-link:nth-child(3) {
+  transform: rotate(-0.8deg);
+}
+
+.nav-link.active {
+  background: var(--marker);
+}
+
+.nav-link:hover {
+  transform: rotate(0deg) translateY(-1px);
+}
+
+.head-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-left: auto;
+}
+
+.search {
+  width: 200px;
+  padding: 8px 14px;
+  border: 2.5px solid var(--ink);
+  border-radius: 16px 14px 18px 12px / 14px 18px 12px 16px;
+  background: var(--card);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.avatar {
+  display: flex;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 2.5px solid var(--ink);
+  border-radius: 50%;
+  background: var(--card);
+  font-weight: 900;
+}
+
+.mobile-search {
+  display: none;
+}
+
+@media (max-width: 1000px) {
+  .site-header {
+    padding: 18px 24px 12px;
+  }
+}
+
+@media (max-width: 640px) {
+  .site-header {
+    position: sticky;
+    z-index: 5;
+    top: 0;
+    gap: 10px;
+    padding: 14px 16px 10px;
+    background: var(--paper);
+  }
+
+  .brand {
+    font-size: 19px;
+  }
+
+  .site-nav {
+    display: none;
+  }
+
+  .head-right {
+    gap: 10px;
+  }
+
+  .head-right .search {
+    display: none;
+  }
+
+  .avatar {
+    width: 34px;
+    height: 34px;
+    font-size: 13px;
+  }
+
+  .mobile-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 16px 14px;
+    padding: 9px 14px;
+    border: 2.5px solid var(--ink);
+    border-radius: 14px 12px 16px 10px / 12px 16px 10px 14px;
+    background: var(--card);
+    color: var(--gray);
+  }
+
+  .mobile-search input {
+    width: 100%;
+    border: 0;
+    outline: 0;
+    background: none;
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 13px;
+  }
+
+  .mobile-search svg {
+    flex-shrink: 0;
+  }
+}
