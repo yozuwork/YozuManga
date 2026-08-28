@@ -1,0 +1,2104 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>柚子的書庫 — 追漫 · 實體書 · 分類</title>
+<style>
+  :root{
+    --ink:#181818;
+    --paper:#f3efe6;
+    --marker:#e8c34a;
+    --marker-soft:rgba(232,195,74,.35);
+    --pink:#e39aa0;
+    --mint:#9fc6ab;
+    --gray:#8f897a;
+    --card:#fffdf7;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--paper); color:var(--ink);
+    font-family:"Klee One","Noto Sans TC",sans-serif;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(0,0,0,0.015) 0 1px, transparent 1px 3px);
+    min-height:100vh;
+  }
+
+  .mobile-search{display:none;}
+  .tabbar{display:none;}
+
+  header{
+    display:flex; align-items:center; gap:24px; padding:20px 34px 14px;
+    position:sticky; top:0; z-index:20; background:var(--paper);
+  }
+  .brand{font-size:24px; font-weight:900; display:flex; align-items:center; gap:8px; letter-spacing:1px; white-space:nowrap;}
+  .brand .badge-mark{
+    display:inline-block; border:3px solid var(--ink); border-radius:50% 50% 48% 52% / 55% 48% 52% 45%;
+    padding:4px 10px; font-size:14px; transform:rotate(-3deg);
+  }
+  nav{display:flex; gap:10px; margin-left:10px;}
+  nav a{
+    text-decoration:none; color:var(--ink); font-weight:700; font-size:14px;
+    padding:8px 18px; border:2.5px solid var(--ink); cursor:pointer;
+    border-radius:14px 16px 15px 13px / 16px 12px 18px 14px;
+    background:var(--card); transform:rotate(-1deg);
+    transition:transform .12s, background .12s;
+    user-select:none;
+  }
+  nav a:nth-child(2){transform:rotate(1.2deg);}
+  nav a:nth-child(3){transform:rotate(-0.8deg);}
+  nav a:nth-child(4){transform:rotate(0.9deg);}
+  nav a.active{background:var(--marker);}
+  nav a:hover{transform:rotate(0deg) translateY(-1px);}
+  .head-right{margin-left:auto; display:flex; align-items:center; gap:14px;}
+  .search{
+    border:2.5px solid var(--ink); border-radius:16px 14px 18px 12px / 14px 18px 12px 16px;
+    padding:8px 14px; font-size:13px; background:var(--card); font-weight:600; width:200px;
+  }
+  .avatar{
+    width:40px; height:40px; border:2.5px solid var(--ink); border-radius:50%;
+    background:var(--card); display:flex; align-items:center; justify-content:center; font-weight:900;
+    flex-shrink:0;
+  }
+
+  .banner{
+    margin:18px 34px 26px; padding:24px 28px;
+    border:3px solid var(--ink); border-radius:22px 8px 20px 10px / 10px 20px 8px 22px;
+    background:var(--card); position:relative;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .banner h1{font-size:28px; font-weight:900;}
+  .banner p{font-size:13px; color:var(--gray); margin-top:6px; font-weight:600;}
+  .banner .sticker{
+    border:2.5px solid var(--ink); border-radius:50%; padding:14px 14px;
+    font-weight:900; font-size:12px; text-align:center; line-height:1.3; transform:rotate(6deg);
+    background:var(--marker); flex-shrink:0;
+  }
+
+  .filters{
+    display:flex; gap:10px; padding:1rem 34px 20px; flex-wrap:wrap;
+  }
+  .filters span{
+    border:2px solid var(--ink); padding:7px 16px; font-size:13px; font-weight:700;
+    border-radius:14px 10px 16px 12px / 10px 16px 10px 14px; background:var(--card); cursor:pointer;
+  }
+  .filters span.on{background:var(--ink); color:var(--paper);}
+  .filters span.add-pill{
+    border-style:dashed; background:var(--marker-soft); font-weight:900;
+  }
+  .filters span.add-pill:hover{background:var(--marker);}
+
+  .board{
+    padding:0 34px 60px; display:grid; grid-template-columns:repeat(4, 1fr); gap:26px;
+  }
+  .sticky{
+    background:var(--card); border:2.5px solid var(--ink);
+    border-radius:6px 6px 4px 4px;
+    padding:0; position:relative; box-shadow:4px 6px 0 rgba(24,24,24,.9);
+    transition:transform .12s;
+  }
+  .sticky:nth-child(3n+1){transform:rotate(-1.4deg);}
+  .sticky:nth-child(3n+2){transform:rotate(1.1deg);}
+  .sticky:nth-child(3n){transform:rotate(-0.6deg);}
+  .sticky:hover{transform:rotate(0deg) translateY(-3px);}
+  #view-manga .sticky{cursor:pointer;}
+
+  .pin{
+    position:absolute; top:-9px; left:50%; transform:translateX(-50%);
+    width:16px; height:16px; border-radius:50%; background:var(--ink);
+    box-shadow:0 0 0 3px var(--paper); z-index:2;
+  }
+  .cover{
+    height:180px; border-bottom:2.5px solid var(--ink);
+    display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;
+    background:
+      repeating-linear-gradient(115deg, transparent 0 10px, rgba(0,0,0,.045) 10px 11px);
+    background-repeat:no-repeat;
+  }
+  .cover span{
+    font-weight:900; font-size:15px; text-align:center; padding:0 14px; line-height:1.4;
+  }
+  .tag{
+    position:absolute; bottom:8px; left:8px; background:var(--marker); border:1.5px solid var(--ink);
+    font-size:10px; font-weight:800; padding:2px 8px; border-radius:8px 6px 10px 6px;
+  }
+  .tag.pink{background:var(--pink);}
+  .tag.mint{background:var(--mint);}
+  .tag.gray{background:#d6d2c4; color:var(--gray);}
+  .tag.marker{background:var(--marker);}
+  .tag.sky{background:#93b8d8;}
+  .tag.lavender{background:#c3a8d8;}
+  .info{padding:14px 16px 16px;}
+  .info h3{font-size:16px; font-weight:900; margin-bottom:5px;}
+  .info .meta{font-size:11px; color:var(--gray); font-weight:700; margin-bottom:10px;}
+  .info .author-line{font-size:11px; color:var(--gray); font-weight:600; margin:-6px 0 10px; display:flex; align-items:center; gap:4px;}
+  .read-link-btn{
+    display:flex; align-items:center; justify-content:center; gap:5px;
+    margin-top:10px; padding:8px 12px; border:2px solid var(--ink); border-radius:9px;
+    background:var(--marker); color:var(--ink); font-weight:800; font-size:12px;
+    text-decoration:none; text-align:center;
+  }
+  .read-link-btn:hover{background:#e0b93a;}
+  .prow{display:flex; justify-content:space-between; font-size:11px; font-weight:800; margin-bottom:6px;}
+  .track{height:9px; border:2px solid var(--ink); border-radius:6px; overflow:hidden; background:var(--paper);}
+  .track i{display:block; height:100%; background:var(--marker); border-right:2px solid var(--ink);}
+  .track i.mint{background:var(--mint);}
+  .chips{display:flex; gap:6px; flex-wrap:wrap; margin-top:10px;}
+  .chip{
+    font-size:10px; font-weight:700; border:1.5px solid var(--ink); padding:2px 9px;
+    border-radius:9px 7px 10px 6px; background:var(--paper);
+  }
+
+  /* 分類 page */
+  .cat-wrap{padding:0 34px 60px; display:grid; grid-template-columns:1fr; gap:30px; max-width:760px; margin:0 auto;}
+  #view-settings .cat-wrap{padding-top:24px;}
+  .cat-section{
+    background:var(--card); border:2.5px solid var(--ink);
+    border-radius:18px 8px 16px 10px / 10px 16px 8px 18px;
+    padding:22px 24px; box-shadow:5px 6px 0 rgba(24,24,24,.9);
+  }
+  .cat-section h2{font-size:17px; font-weight:900; margin-bottom:4px; display:flex; align-items:center; gap:8px;}
+  .cat-section .hint{font-size:12px; color:var(--gray); font-weight:600; margin-bottom:16px;}
+  #view-cats .sticky{cursor:pointer;}
+  .sticky.hidden{display:none;}
+  .cat-card-remove{
+    position:absolute; top:8px; right:8px; z-index:4;
+    width:24px; height:24px; border:2px solid var(--ink); border-radius:50%;
+    background:var(--card); display:flex; align-items:center; justify-content:center;
+    font-size:11px; cursor:pointer; opacity:0; transition:opacity .15s;
+  }
+  .sticky:hover .cat-card-remove{opacity:1;}
+  .cat-card-remove:hover{background:#e8a8a8;}
+  @media (max-width:640px){
+    .cat-card-remove{opacity:1; width:20px; height:20px; font-size:9px;}
+  }
+  .cat-list{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:18px;}
+  .cat-pill{
+    display:flex; align-items:center; gap:8px;
+    border:2px solid var(--ink); border-radius:14px 10px 16px 12px / 10px 16px 10px 14px;
+    padding:8px 14px; background:var(--paper); font-weight:800; font-size:13px;
+    transform:rotate(-0.5deg);
+  }
+  .cat-pill:nth-child(3n){transform:rotate(0.8deg);}
+  .cat-pill:nth-child(3n+1){transform:rotate(-1deg);}
+  .cat-pill.hidden{display:none;}
+  .cat-pill .cat-type-icons{font-size:11px; letter-spacing:-2px;}
+  .cat-pill .count{
+    background:var(--ink); color:var(--paper); font-size:10px; font-weight:800;
+    border-radius:50%; width:20px; height:20px; display:flex; align-items:center; justify-content:center;
+  }
+  .cat-pill.marker{background:var(--marker-soft);}
+  .cat-pill.pink{background:rgba(227,154,160,.35);}
+  .cat-pill.mint{background:rgba(159,198,171,.35);}
+  .cat-pill.gray{background:#e3e0d4;}
+  .cat-pill.sky{background:rgba(147,184,216,.35);}
+  .cat-pill.lavender{background:rgba(195,168,216,.35);}
+  .cat-pill .color-swatch{
+    width:14px; height:14px; border-radius:50%; border:1.5px solid var(--ink);
+    cursor:pointer; flex-shrink:0;
+  }
+  .cat-pill .color-swatch:hover{transform:scale(1.15);}
+  .cat-pill .status-type-select{
+    border:1.5px solid var(--ink); border-radius:7px; padding:2px 5px; font-size:10.5px;
+    font-weight:700; font-family:inherit; background:var(--card); color:var(--ink); cursor:pointer;
+  }
+  .cat-pill .remove-btn{
+    margin-left:2px; font-weight:900; opacity:.5; cursor:pointer; font-size:14px; line-height:1;
+  }
+  .cat-pill .remove-btn:hover{opacity:1; color:#c0392b;}
+  .add-row{
+    display:flex; gap:8px; border-top:2px dashed rgba(24,24,24,.25); padding-top:14px; flex-wrap:wrap;
+  }
+  .add-row input{
+    flex:1; min-width:140px; border:2px solid var(--ink); border-radius:10px; padding:8px 12px; font-size:13px;
+    font-family:inherit; background:var(--paper);
+  }
+  .add-row select{
+    border:2px solid var(--ink); border-radius:10px; padding:8px 10px; font-size:13px;
+    font-family:inherit; background:var(--paper); color:var(--ink);
+  }
+  .type-check{
+    display:flex; align-items:center; gap:6px; border:2px solid var(--ink); border-radius:10px;
+    padding:8px 12px; font-size:12.5px; font-weight:700; background:var(--paper); cursor:pointer;
+    white-space:nowrap;
+  }
+  .type-check input{width:14px; height:14px; accent-color:var(--ink); flex:none;}
+  .checkbox-grid{display:flex; flex-wrap:wrap; gap:8px;}
+  .add-row button{
+    border:2px solid var(--ink); border-radius:10px; padding:8px 16px; font-size:13px; font-weight:800;
+    background:var(--marker); cursor:pointer; font-family:inherit;
+  }
+
+  footer{
+    padding:24px 34px; text-align:center; font-size:11px; color:var(--gray); font-weight:700;
+  }
+
+  .view{display:none;}
+  .view.active{display:block;}
+
+  /* ===================================================================
+     RWD — tablet breakpoint: tighten spacing, drop board to 2 columns
+     =================================================================== */
+  @media (max-width: 1000px){
+    .board{grid-template-columns:repeat(2, 1fr);}
+    .cat-wrap{grid-template-columns:1fr;}
+    header{padding:18px 24px 12px;}
+    .banner, .filters, .board, .cat-wrap{margin-left:0; margin-right:0;}
+    .banner{margin:16px 24px 22px;}
+    .filters{padding:1rem 24px 18px;}
+    .board{padding:0 24px 50px;}
+    .cat-wrap{padding:0 24px 50px;}
+  }
+
+  /* ===================================================================
+     Floating "+" button (desktop: bottom-right of board; mobile: above
+     the tab bar) — quick way to open the add-manga modal from anywhere
+     while viewing 追漫. Defined BEFORE the mobile media query below so
+     that block's overrides (same specificity) win in the cascade.
+     =================================================================== */
+  .fab-add{
+    display:none;
+    position:fixed; right:34px; bottom:34px; z-index:12;
+    width:56px; height:56px; border-radius:50%;
+    border:3px solid var(--ink); background:var(--marker);
+    align-items:center; justify-content:center;
+    font-size:26px; font-weight:900; line-height:1; cursor:pointer;
+    box-shadow:4px 5px 0 rgba(24,24,24,.9);
+    font-family:inherit; color:var(--ink);
+  }
+  .fab-add:hover{transform:translateY(-2px);}
+  .fab-add.show{display:flex;}
+
+  /* ===================================================================
+     RWD — mobile breakpoint: top nav → bottom tab bar, cards → 1 col
+     row layout, search moves under top bar, footer hidden
+     =================================================================== */
+  @media (max-width: 640px){
+    html, body{max-width:100%;}
+    body{padding-bottom:74px;}
+
+    header{
+      padding:14px 16px 10px; gap:10px;
+      position:sticky; top:0; background:var(--paper); z-index:5;
+    }
+    .brand{font-size:19px;}
+    .brand .badge-mark{padding:3px 8px; font-size:12px;}
+    header nav{display:none;}
+    .head-right{gap:10px;}
+    .head-right .search{display:none;}
+    .avatar{width:34px; height:34px; font-size:13px;}
+
+    .mobile-search{
+      display:flex; align-items:center; gap:8px;
+      margin:0 16px 14px;
+      border:2.5px solid var(--ink); border-radius:14px 12px 16px 10px / 12px 16px 10px 14px;
+      padding:9px 14px; background:var(--card);
+    }
+    .mobile-search input{
+      border:none; outline:none; background:none; font-family:inherit; font-size:13px; width:100%; color:var(--ink);
+    }
+    .mobile-search svg{flex-shrink:0;}
+
+    .banner{margin:0 16px 16px; padding:18px; gap:12px;}
+    .banner h1{font-size:19px;}
+    .banner p{font-size:11.5px;}
+    .banner .sticker{padding:11px; font-size:10.5px;}
+
+    .filters{padding:1rem 16px 16px;}
+    .filters span{padding:6px 14px; font-size:12px;}
+
+    .board{grid-template-columns:repeat(3, 1fr); padding:0 12px 24px; gap:10px;}
+    .sticky{display:block; box-shadow:2px 3px 0 rgba(24,24,24,.9);}
+    .sticky:nth-child(odd){transform:rotate(-0.6deg);}
+    .sticky:nth-child(even){transform:rotate(0.5deg);}
+    .pin{width:10px; height:10px; top:-6px; box-shadow:0 0 0 2px var(--paper);}
+    .cover{width:auto; height:78px; flex-shrink:0; border-bottom:2px solid var(--ink); border-right:none;}
+    .cover span{font-size:9.5px; line-height:1.25; padding:0 4px; font-weight:900;}
+    .tag{font-size:7.5px; padding:1.5px 5px; bottom:4px; left:4px; border-radius:6px 4px 7px 4px;}
+    .info{padding:7px 7px 9px;}
+    .info h3{font-size:11.5px; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+    .info .meta{font-size:8px; margin-bottom:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+    .prow{font-size:8px; margin-bottom:4px;}
+    .track{height:6px; border-width:1.5px;}
+    .track i{border-right-width:1.5px;}
+    .chips{display:none;}
+    .author-line{display:none;}
+    .read-link-btn{display:none;}
+
+    .cat-wrap{padding:0 16px 24px; gap:16px;}
+    .cat-section{padding:16px 16px 18px;}
+
+    footer{display:none;}
+
+    .tabbar{
+      display:flex; justify-content:space-around; align-items:center;
+      position:fixed; left:0; right:0; bottom:0;
+      background:var(--card); border-top:3px solid var(--ink);
+      padding:9px 8px calc(9px + env(safe-area-inset-bottom));
+      z-index:10;
+    }
+    .tab-btn{
+      display:flex; flex-direction:column; align-items:center; gap:3px;
+      background:none; border:none; font-family:inherit; color:var(--gray);
+      font-size:9.5px; font-weight:700; padding:5px 8px; cursor:pointer;
+      border-radius:10px; white-space:nowrap;
+    }
+    .tab-btn svg{width:21px; height:21px; opacity:.75;}
+    .tab-btn.active{color:var(--ink); background:var(--marker-soft);}
+    .tab-btn.active svg{opacity:1;}
+
+    .fab-add{
+      right:20px;
+      bottom:calc(100px + env(safe-area-inset-bottom));
+      width:48px; height:48px; font-size:22px;
+    }
+  }
+
+  /* ===================================================================
+     Add-manga modal — fullscreen panel that slides in from the right,
+     same behaviour on desktop and mobile.
+     =================================================================== */
+  .modal-backdrop{
+    display:none; position:fixed; inset:0; z-index:50;
+    background:rgba(24,24,24,.45);
+    opacity:0; transition:opacity .28s ease;
+  }
+  .modal-backdrop.open{display:block; opacity:1;}
+  .modal-card{
+    position:fixed; top:0; right:0; bottom:0;
+    width:100%; height:100%;
+    background:var(--card); border-left:3px solid var(--ink);
+    padding:0; overflow-y:auto;
+    transform:translateX(100%);
+    transition:transform .32s cubic-bezier(.32,.72,.35,1);
+  }
+  .modal-backdrop.open .modal-card{transform:translateX(0);}
+  .modal-close{
+    position:absolute; top:18px; right:20px; width:30px; height:30px;
+    border:2px solid var(--ink); border-radius:50%; background:var(--paper);
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    font-weight:900; font-size:14px; line-height:1; z-index:5;
+  }
+
+  /* ===== Notion-style cover banner ===== */
+  .cover-banner{
+    position:relative; width:100%; height:150px;
+    background-color:var(--paper2);
+    background-image:repeating-linear-gradient(115deg, transparent 0 10px, rgba(0,0,0,.045) 10px 11px);
+    background-size:cover; background-position:50% 50%; background-repeat:no-repeat;
+    border-bottom:2px solid var(--ink);
+    cursor:grab; touch-action:none; user-select:none;
+    outline:none; transition:box-shadow .15s;
+  }
+  .cover-banner:focus{
+    box-shadow:inset 0 0 0 4px var(--marker), inset 0 0 0 6px var(--ink);
+  }
+  .cover-banner.has-image{cursor:grab;}
+  .cover-banner.dragging{cursor:grabbing;}
+  .cover-icon{
+    position:absolute; left:26px; bottom:-28px; z-index:3;
+    width:64px; height:64px; border:3px solid var(--ink); border-radius:16px;
+    background:var(--marker); display:flex; align-items:center; justify-content:center;
+    font-size:28px; box-shadow:3px 4px 0 rgba(24,24,24,.9);
+    cursor:pointer; transition:transform .12s;
+  }
+  .cover-icon:hover{transform:scale(1.06);}
+  .cover-icon input{
+    width:100%; height:100%; border:none; background:none; outline:none;
+    text-align:center; font-size:24px; font-family:inherit; padding:0;
+  }
+  .cover-btn{
+    position:absolute; bottom:12px; right:12px; z-index:3;
+    border:2px solid var(--ink); border-radius:9px; padding:6px 13px;
+    background:var(--card); font-weight:800; font-size:12px; cursor:pointer;
+    font-family:inherit; box-shadow:2px 3px 0 rgba(24,24,24,.9);
+  }
+  .cover-fit-btn{
+    position:absolute; bottom:12px; left:12px; z-index:3;
+    border:2px solid var(--ink); border-radius:9px; padding:6px 13px;
+    background:var(--card); font-weight:800; font-size:12px; cursor:pointer;
+    font-family:inherit; box-shadow:2px 3px 0 rgba(24,24,24,.9);
+    display:none;
+  }
+  .cover-banner.has-image .cover-fit-btn{display:block;}
+  @media (max-width:640px){
+    .cover-fit-btn{font-size:10.5px; padding:5px 10px;}
+  }
+  .cover-drag-hint{
+    position:absolute; left:12px; top:12px; z-index:2;
+    background:rgba(24,24,24,.65); color:var(--paper);
+    font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:8px;
+    pointer-events:none; opacity:0; transition:opacity .2s;
+  }
+  .cover-banner.has-image:hover .cover-drag-hint,
+  .cover-banner.dragging .cover-drag-hint{opacity:1;}
+  .cover-paste-hint{
+    position:absolute; left:50%; bottom:14px; transform:translateX(-50%); z-index:2;
+    font-size:11px; font-weight:700; color:var(--gray);
+    pointer-events:none; white-space:nowrap;
+    padding:4px 10px; border-radius:8px; transition:background .15s, color .15s;
+  }
+  .cover-banner.has-image .cover-paste-hint{display:none;}
+  .cover-banner:focus .cover-paste-hint{
+    color:var(--ink); background:var(--marker); font-weight:900;
+  }
+  @media (max-width:640px){
+    .cover-paste-hint{font-size:9.5px; white-space:normal; text-align:center; width:80%;}
+  }
+  .cover-resize-handle{
+    position:absolute; left:50%; bottom:-4px; transform:translateX(-50%);
+    width:48px; height:8px; border-radius:5px; z-index:4;
+    background:var(--ink); opacity:.3; cursor:ns-resize;
+    transition:opacity .15s;
+  }
+  .cover-resize-handle:hover, .cover-resize-handle.resizing{opacity:.7;}
+
+  .modal-inner{
+    max-width:480px; margin:0 auto; padding:26px 26px 22px;
+    display:flex; flex-direction:column; min-height:calc(100% - 150px);
+  }
+  .modal-eyebrow{
+    font-size:12px; color:var(--gray); font-weight:700; margin-bottom:6px;
+    display:flex; align-items:center; gap:6px;
+  }
+  .title-input{
+    width:100%; border:none; outline:none; background:none;
+    font-family:inherit; font-size:32px; font-weight:900; color:var(--ink);
+    padding:2px 0 4px; margin-bottom:22px; border-bottom:2px solid transparent;
+  }
+  .title-input::placeholder{color:#cac5b8;}
+  .title-input:focus{border-bottom:2px dashed var(--ink);}
+
+  .form-field{margin-bottom:14px;}
+  .form-field label{display:block; font-size:12px; font-weight:800; margin-bottom:5px;}
+  .form-field label.type-check{
+    display:flex; font-size:12.5px; font-weight:700; margin-bottom:0;
+  }
+  .form-field .type-check input{width:14px; height:14px; flex:none;}
+  .form-field input, .form-field select{
+    width:100%; border:2px solid var(--ink); border-radius:9px; padding:9px 11px;
+    font-family:inherit; font-size:13px; background:var(--paper); color:var(--ink);
+  }
+  .form-row{display:flex; gap:10px;}
+  .form-row .form-field{flex:1; min-width:0;}
+  .edition-group{
+    border:2px dashed rgba(24,24,24,.2); border-radius:10px; padding:12px 12px 2px; margin-bottom:14px;
+  }
+  .edition-label{font-size:12.5px; font-weight:800; margin-bottom:8px; color:var(--gray);}
+  .checkbox-row{
+    display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; margin:2px 0 18px;
+  }
+  .checkbox-row input{width:16px; height:16px; accent-color:var(--ink);}
+  #addMangaForm{flex:1; display:flex; flex-direction:column;}
+  .modal-actions{display:flex; justify-content:flex-end; gap:10px; margin-top:auto; padding-top:14px;}
+  @media (max-width:640px){
+    .cover-banner{height:120px;}
+    .cover-icon{width:54px; height:54px; font-size:24px; left:18px; bottom:-24px;}
+    .modal-inner{padding:20px 18px 24px; min-height:calc(100% - 120px);}
+    .title-input{font-size:26px;}
+    .modal-close{top:16px; right:16px;}
+  }
+  .btn-cancel, .btn-submit{
+    border:2px solid var(--ink); border-radius:10px; padding:9px 18px;
+    font-weight:800; font-size:13px; cursor:pointer; font-family:inherit;
+  }
+  .btn-cancel{background:var(--paper);}
+  .btn-submit{background:var(--marker);}
+  .btn-submit:hover{background:#e0b93a;}
+
+  /* Success toast */
+  .toast{
+    position:fixed; left:50%; bottom:34px; transform:translateX(-50%) translateY(20px);
+    background:var(--mint); border:3px solid var(--ink); border-radius:14px 8px 12px 10px / 10px 12px 8px 14px;
+    padding:12px 22px; font-weight:900; font-size:14px; box-shadow:4px 5px 0 rgba(24,24,24,.9);
+    z-index:60; opacity:0; pointer-events:none; transition:opacity .25s, transform .25s;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  @media (max-width:640px){
+    .toast{bottom:90px; padding:10px 18px; font-size:12.5px;}
+  }
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="brand">柚子的書庫</div>
+  <nav>
+    <a class="nav-link active" data-view="manga">追漫</a>
+    <a class="nav-link" data-view="books">實體書</a>
+    <a class="nav-link" data-view="cats">分類</a>
+    <a class="nav-link" data-view="settings">設置</a>
+  </nav>
+  <div class="head-right">
+    <input class="search" id="searchDesktop" placeholder="找漫畫、找書、找作者…">
+    <div class="avatar">米</div>
+  </div>
+</header>
+
+<div class="mobile-search">
+  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#8f897a" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+  <input id="searchMobile" placeholder="找漫畫、找書、找作者…">
+</div>
+
+<!-- ===================== 追漫 ===================== -->
+<div class="view active" id="view-manga">
+  <div class="filters">
+    <span class="on" id="mangaFilterAll">全部 24</span>
+    <span id="mangaStatusFilters" style="display:contents;"><!-- rendered by JS from readingStatuses --></span>
+    <span class="add-pill" id="openAddManga">＋ 新增追漫</span>
+  </div>
+
+  <div class="board">
+    <div class="sticky"><div class="pin"></div>
+      <div class="cover"><span>崩壞的刃</span><div class="tag">連載中</div></div>
+      <div class="info">
+        <h3>崩壞的刃</h3>
+        <div class="meta">戰鬥・週刊少年誌</div>
+        <div class="prow"><span>142 話</span><span>/ 156</span></div>
+        <div class="track"><i style="width:91%"></i></div>
+      </div>
+    </div>
+
+    <div class="sticky"><div class="pin"></div>
+      <div class="cover"><span>雨夜圖書館</span><div class="tag pink">已完結</div></div>
+      <div class="info">
+        <h3>雨夜圖書館</h3>
+        <div class="meta">懸疑・月刊</div>
+        <div class="prow"><span>38 話</span><span>已補完</span></div>
+        <div class="track"><i style="width:100%"></i></div>
+      </div>
+    </div>
+
+    <div class="sticky"><div class="pin"></div>
+      <div class="cover"><span>拳與影</span><div class="tag">連載中</div></div>
+      <div class="info">
+        <h3>拳與影</h3>
+        <div class="meta">運動・週刊少年誌</div>
+        <div class="prow"><span>9 話</span><span>/ 21</span></div>
+        <div class="track"><i style="width:43%"></i></div>
+      </div>
+    </div>
+
+    <div class="sticky"><div class="pin"></div>
+      <div class="cover"><span>星塵日記</span><div class="tag">連載中</div></div>
+      <div class="info">
+        <h3>星塵日記</h3>
+        <div class="meta">日常・網漫</div>
+        <div class="prow"><span>210 話</span><span>/ 300</span></div>
+        <div class="track"><i style="width:70%"></i></div>
+      </div>
+    </div>
+
+    <div class="sticky"><div class="pin"></div>
+      <div class="cover"><span>灰色海岸線</span><div class="tag gray">已棄坑</div></div>
+      <div class="info">
+        <h3>灰色海岸線</h3>
+        <div class="meta">劇情・季刊</div>
+        <div class="prow"><span>12 話</span><span>/ 45</span></div>
+        <div class="track"><i style="width:27%"></i></div>
+      </div>
+    </div>
+
+    <div class="sticky"><div class="pin"></div>
+      <div class="cover"><span>刀鋒學院</span><div class="tag mint">快追上了</div></div>
+      <div class="info">
+        <h3>刀鋒學院</h3>
+        <div class="meta">戰鬥・週刊少年誌</div>
+        <div class="prow"><span>5 話</span><span>連載中</span></div>
+        <div class="track"><i style="width:35%"></i></div>
+      </div>
+    </div>
+
+    <div class="sticky"><div class="pin"></div>
+      <div class="cover"><span>貓町奇談</span><div class="tag">連載中</div></div>
+      <div class="info">
+        <h3>貓町奇談</h3>
+        <div class="meta">奇幻・月刊</div>
+        <div class="prow"><span>61 話</span><span>/ 88</span></div>
+        <div class="track"><i style="width:69%"></i></div>
+      </div>
+    </div>
+
+    <div class="sticky"><div class="pin"></div>
+      <div class="cover"><span>沉默的鑄劍師</span><div class="tag">連載中</div></div>
+      <div class="info">
+        <h3>沉默的鑄劍師</h3>
+        <div class="meta">武俠・週刊青年誌</div>
+        <div class="prow"><span>33 話</span><span>/ 120</span></div>
+        <div class="track"><i style="width:27%"></i></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 實體書 ===================== -->
+<div class="view" id="view-books">
+  <div class="filters">
+    <span class="on" id="bookFilterAll">全部 15 套</span>
+    <span id="bookStatusFilters" style="display:contents;"><!-- rendered by JS from readingStatuses --></span>
+    <span class="add-pill" id="openAddBook">＋ 新增書本</span>
+  </div>
+
+  <div class="board">
+    <div class="sticky"><div class="pin"></div>
+      <div class="cover"><span>崩壞的刃</span><div class="tag pink">已完結</div></div>
+      <div class="info">
+        <h3>崩壞的刃</h3>
+        <div class="meta">尖端出版・書架 A-3</div>
+        <div class="prow"><span>已收 18 冊</span><span>/ 18</span></div>
+        <div class="track"><i class="mint" style="width:100%"></i></div>
+        <div class="chips"><span class="chip">戰鬥少年</span></div>
+      </div>
+    </div>
+
+    <div class="sticky"><div class="pin"></div>
+      <div class="cover"><span>雨夜圖書館</span><div class="tag pink">已完結</div></div>
+      <div class="info">
+        <h3>雨夜圖書館</h3>
+        <div class="meta">東立出版・書架 A-1</div>
+        <div class="prow"><span>已收 5 冊</span><span>/ 8</span></div>
+        <div class="track"><i style="width:63%"></i></div>
+        <div class="chips"><span class="chip">懸疑劇情</span></div>
+      </div>
+    </div>
+
+    <div class="sticky"><div class="pin"></div>
+      <div class="cover"><span>拳與影</span><div class="tag">連載中</div></div>
+      <div class="info">
+        <h3>拳與影</h3>
+        <div class="meta">青文出版・書架 B-2</div>
+        <div class="prow"><span>已收 3 冊</span><span>/ 5</span></div>
+        <div class="track"><i style="width:60%"></i></div>
+        <div class="chips"><span class="chip">運動熱血</span></div>
+      </div>
+    </div>
+
+    <div class="sticky"><div class="pin"></div>
+      <div class="cover"><span>星塵日記</span><div class="tag">連載中</div></div>
+      <div class="info">
+        <h3>星塵日記</h3>
+        <div class="meta">東立出版・書架 B-1</div>
+        <div class="prow"><span>已收 22 冊</span><span>/ 30</span></div>
+        <div class="track"><i style="width:73%"></i></div>
+        <div class="chips"><span class="chip">日常療癒</span></div>
+      </div>
+    </div>
+
+    <div class="sticky"><div class="pin"></div>
+      <div class="cover"><span>灰色海岸線</span><div class="tag gray">已棄坑</div></div>
+      <div class="info">
+        <h3>灰色海岸線</h3>
+        <div class="meta">大然出版・書架 C-4</div>
+        <div class="prow"><span>已收 6 冊</span><span>/ 6</span></div>
+        <div class="track"><i class="mint" style="width:100%"></i></div>
+        <div class="chips"><span class="chip">懸疑劇情</span></div>
+      </div>
+    </div>
+
+    <div class="sticky"><div class="pin"></div>
+      <div class="cover"><span>刀鋒學院</span><div class="tag mint">快追上了</div></div>
+      <div class="info">
+        <h3>刀鋒學院</h3>
+        <div class="meta">尖端出版・書架 A-3</div>
+        <div class="prow"><span>已收 4 冊</span><span>/ 5</span></div>
+        <div class="track"><i style="width:80%"></i></div>
+        <div class="chips"><span class="chip">戰鬥少年</span></div>
+      </div>
+    </div>
+
+    <div class="sticky"><div class="pin"></div>
+      <div class="cover"><span>貓町奇談</span><div class="tag">連載中</div></div>
+      <div class="info">
+        <h3>貓町奇談</h3>
+        <div class="meta">尖端出版・書架 C-1</div>
+        <div class="prow"><span>已收 9 冊</span><span>/ 12</span></div>
+        <div class="track"><i style="width:75%"></i></div>
+        <div class="chips"><span class="chip">奇幻冒險</span></div>
+      </div>
+    </div>
+
+    <div class="sticky"><div class="pin"></div>
+      <div class="cover"><span>沉默的鑄劍師</span><div class="tag">連載中</div></div>
+      <div class="info">
+        <h3>沉默的鑄劍師</h3>
+        <div class="meta">青文出版・書架 D-2</div>
+        <div class="prow"><span>已收 19 冊</span><span>/ 27</span></div>
+        <div class="track"><i style="width:70%"></i></div>
+        <div class="chips"><span class="chip">戰鬥少年</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 分類 ===================== -->
+<div class="view" id="view-cats">
+  <div class="filters" id="catTypeFilters">
+    <span class="on" data-cattype="all">全部</span>
+    <span data-cattype="manga">📖 追漫</span>
+    <span data-cattype="book">📚 實體書</span>
+    <span class="add-pill" id="openAddCat">＋ 新增分類</span>
+  </div>
+
+  <div class="board" id="unifiedCatList"><!-- rendered by JS --></div>
+</div>
+
+<!-- ===================== 設置 ===================== -->
+<div class="view" id="view-settings">
+  <div class="cat-wrap">
+    <div class="cat-section">
+      <h2>📖 閱讀狀態</h2>
+      <div class="hint">管理追漫、實體書可選擇的閱讀狀態，可分別決定套用範圍</div>
+      <div class="cat-list" id="statusList"><!-- rendered by JS --></div>
+      <div class="add-row">
+        <input id="newStatusInput" placeholder="新增閱讀狀態，例如：等連載出全…">
+        <select id="newStatusType">
+          <option value="both">追漫＋實體書</option>
+          <option value="manga">僅追漫</option>
+          <option value="book">僅實體書</option>
+        </select>
+        <button id="addStatusBtn" type="button">＋ 新增</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>柚子的書庫 — 追漫 · 實體書 · 分類 · 設置　參考稿</footer>
+
+<!-- Mobile-only bottom tab bar (hidden on desktop/tablet via media query) -->
+<div class="tabbar">
+  <button class="tab-btn nav-link active" data-view="manga">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5a2 2 0 012-2h12a2 2 0 012 2v14l-8-4-8 4z"/></svg>
+    追漫
+  </button>
+  <button class="tab-btn nav-link" data-view="books">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h9a3 3 0 013 3v13H7a3 3 0 01-3-3V4z"/><path d="M16 4h4v16h-4"/></svg>
+    實體書
+  </button>
+  <button class="tab-btn nav-link" data-view="cats">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.6 12.6L12 21.2 2.8 12 12 2.8l8.6 8.6a1 1 0 010 1.4z"/><circle cx="8.5" cy="8.5" r="1.2" fill="currentColor" stroke="none"/></svg>
+    分類
+  </button>
+  <button class="tab-btn nav-link" data-view="settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 005 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    設置
+  </button>
+</div>
+
+<!-- Floating + button — quick access to the add-manga modal -->
+<button class="fab-add" id="fabAddManga" aria-label="新增追漫">＋</button>
+
+<!-- Add-manga modal -->
+<div class="modal-backdrop" id="addMangaBackdrop">
+  <div class="modal-card">
+    <button class="modal-close" id="closeAddManga">✕</button>
+
+    <!-- Notion-style cover banner: full-bleed, draggable-to-reposition,
+         with an overlapping icon badge and an add/change-cover button -->
+    <div class="cover-banner" id="coverBanner" tabindex="0">
+      <button type="button" class="cover-btn" id="coverBtnLabel">＋ 新增封面</button>
+      <button type="button" class="cover-fit-btn" id="coverFitBtn" title="切換填滿／顯示全圖">⛶ 顯示全圖</button>
+      <span class="cover-drag-hint">🖱️ 拖曳可調整顯示位置</span>
+      <span class="cover-paste-hint">📋 也可直接貼上圖片或圖片網址（Ctrl/Cmd+V）</span>
+      <div class="cover-resize-handle" id="coverResizeHandle" title="拖曳調整封面高度"></div>
+    </div>
+    <input type="file" id="fCover" accept="image/*" hidden>
+
+    <div class="modal-inner">
+      <div class="modal-eyebrow" id="modalEyebrow">📌 新增追漫作品</div>
+      <input class="title-input" id="fTitle" placeholder="輸入書名…" required>
+
+      <form id="addMangaForm">
+        <div class="form-row">
+          <div class="form-field">
+            <label>分類</label>
+            <select id="fGenre">
+              <option value="">未分類</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>作者</label>
+            <input type="text" id="fAuthor" placeholder="例如：尾田榮一郎">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>目前已讀話數</label>
+            <input type="number" id="fCurrent" placeholder="0" min="0">
+          </div>
+          <div class="form-field">
+            <label>總話數（留白＝連載中）</label>
+            <input type="number" id="fTotal" placeholder="例如：120" min="0">
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>作品連結（選填）</label>
+          <input type="url" id="fLink" placeholder="https://…">
+        </div>
+
+        <div class="form-field">
+          <label>閱讀狀態</label>
+          <select id="fStatus">
+            <!-- options rendered by JS from readingStatuses -->
+          </select>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" id="cancelAddManga">取消</button>
+          <button type="button" class="btn-submit" id="submitAddManga">貼上書架</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Floating + button — quick access to the add-book modal -->
+<button class="fab-add" id="fabAddBook" aria-label="新增書本">＋</button>
+
+<!-- Add/Edit-book modal (cloned from the 追漫 modal, adapted for physical books) -->
+<div class="modal-backdrop" id="addBookBackdrop">
+  <div class="modal-card">
+    <button class="modal-close" id="closeAddBook">✕</button>
+
+    <div class="cover-banner" id="bookCoverBanner" tabindex="0">
+      <button type="button" class="cover-btn" id="bookCoverBtnLabel">＋ 新增封面</button>
+      <button type="button" class="cover-fit-btn" id="bookCoverFitBtn" title="切換填滿／顯示全圖">⛶ 顯示全圖</button>
+      <span class="cover-drag-hint">🖱️ 拖曳可調整顯示位置</span>
+      <span class="cover-paste-hint">📋 也可直接貼上圖片或圖片網址（Ctrl/Cmd+V）</span>
+      <div class="cover-resize-handle" id="bookCoverResizeHandle" title="拖曳調整封面高度"></div>
+    </div>
+    <input type="file" id="bCover" accept="image/*" hidden>
+
+    <div class="modal-inner">
+      <div class="modal-eyebrow" id="bookModalEyebrow">📌 新增書本</div>
+      <input class="title-input" id="bTitle" placeholder="輸入書名…" required>
+
+      <form id="addBookForm">
+        <div class="form-row">
+          <div class="form-field">
+            <label>分類</label>
+            <select id="bGenre">
+              <option value="">未分類</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>作者</label>
+            <input type="text" id="bAuthor" placeholder="例如：尾田榮一郎">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>出版社</label>
+            <input type="text" id="bPublisher" placeholder="例如：尖端出版">
+          </div>
+          <div class="form-field">
+            <label>書架位置</label>
+            <input type="text" id="bShelf" placeholder="例如：書架 A-3">
+          </div>
+        </div>
+
+        <div class="edition-group">
+          <div class="edition-label">🇯🇵 日版</div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>已收冊數</label>
+              <input type="number" id="bJpCurrent" placeholder="0" min="0">
+            </div>
+            <div class="form-field">
+              <label>全套冊數（留白＝收集中）</label>
+              <input type="number" id="bJpTotal" placeholder="例如：25" min="0">
+            </div>
+          </div>
+        </div>
+
+        <div class="edition-group">
+          <div class="edition-label">🇹🇼 台版</div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>已收冊數</label>
+              <input type="number" id="bTwCurrent" placeholder="0" min="0">
+            </div>
+            <div class="form-field">
+              <label>全套冊數（留白＝收集中）</label>
+              <input type="number" id="bTwTotal" placeholder="例如：18" min="0">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>閱讀狀態</label>
+          <select id="bStatus">
+            <!-- options rendered by JS from readingStatuses -->
+          </select>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" id="cancelAddBook">取消</button>
+          <button type="button" class="btn-submit" id="submitAddBook">貼上書架</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Floating + button — quick access to the add-category modal -->
+<button class="fab-add" id="fabAddCat" aria-label="新增分類">＋</button>
+
+<!-- Add-category modal (lightweight — no cover banner needed for a tag) -->
+<div class="modal-backdrop" id="addCatBackdrop">
+  <div class="modal-card">
+    <button class="modal-close" id="closeAddCat">✕</button>
+    <div class="modal-inner" style="padding-top:60px;">
+      <div class="modal-eyebrow">📌 新增分類</div>
+      <input class="title-input" id="newCatNameInput" placeholder="輸入分類名稱…" style="font-size:26px;">
+
+      <div class="form-field" style="margin-top:20px;">
+        <label>套用範圍</label>
+        <div class="checkbox-grid">
+          <label class="type-check"><input type="checkbox" id="newCatTypeManga" checked> 📖 追漫</label>
+          <label class="type-check"><input type="checkbox" id="newCatTypeBook"> 📚 實體書</label>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" id="cancelAddCat">取消</button>
+        <button type="button" class="btn-submit" id="addCatBtn">＋ 新增分類</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Success toast -->
+<div class="toast" id="successToast">✅ 新增成功！已貼上書架</div>
+
+<script>
+  // =====================================================================
+  // Shared categories — used by both the 分類 page and the 追漫「分類」
+  // select in the add/edit modal. Each entry can apply to 'manga',
+  // 'book', or both, so the same tag can be filtered/reused across
+  // 追漫 and 實體書.
+  // =====================================================================
+  const categories = [
+    { name: '戰鬥少年',   types: ['manga', 'book'], count: 7 },
+    { name: '日常療癒',   types: ['manga', 'book'], count: 5 },
+    { name: '懸疑劇情',   types: ['manga', 'book'], count: 4 },
+    { name: '奇幻冒險',   types: ['manga', 'book'], count: 3 },
+    { name: '運動熱血',   types: ['manga', 'book'], count: 2 },
+    { name: '網漫連載',   types: ['manga'],         count: 6 },
+    { name: '已棄坑觀察', types: ['manga'],         count: 2 },
+  ];
+
+  const unifiedCatList = document.getElementById('unifiedCatList');
+  const catTypeFilters = document.getElementById('catTypeFilters');
+  let activeCatFilter = 'all';
+
+  function typeIcons(types){
+    let out = '';
+    if (types.includes('manga')) out += '📖';
+    if (types.includes('book')) out += '📚';
+    return out;
+  }
+
+  function renderCategoryList(){
+    unifiedCatList.innerHTML = categories.map((cat) => {
+      const hidden = activeCatFilter !== 'all' && !cat.types.includes(activeCatFilter);
+      return `
+        <div class="sticky ${hidden ? 'hidden' : ''}" data-cat-name="${cat.name}">
+          <div class="pin"></div>
+          <button class="cat-card-remove" data-cat="${cat.name}" title="刪除分類">✕</button>
+          <div class="cover">
+            <span>${cat.name}</span>
+            <div class="tag">${typeIcons(cat.types)}</div>
+          </div>
+          <div class="info">
+            <h3>${cat.name}</h3>
+            <div class="meta">${cat.count} 個作品・點擊查看</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Clicking a category card jumps to 追漫 (or 實體書 if the category
+  // isn't used there) and filters the board down to that category via
+  // the shared search mechanism.
+  function navigateToCategory(catName, types){
+    const target = types.includes('manga') ? 'manga' : 'books';
+    setActiveView(target);
+    searchQuery = catName.toLowerCase();
+    searchInputs.forEach(inp => { inp.value = catName; });
+    if (target === 'manga') {
+      filterMangaCards('all');
+    } else {
+      applyBooksSearch();
+    }
+  }
+
+  unifiedCatList.addEventListener('click', (e) => {
+    const removeBtn = e.target.closest('.cat-card-remove');
+    if (removeBtn) {
+      const idx = categories.findIndex(c => c.name === removeBtn.dataset.cat);
+      if (idx > -1) categories.splice(idx, 1);
+      renderCategoryList();
+      renderGenreOptions();
+      renderBookGenreOptions();
+      return;
+    }
+    const card = e.target.closest('.sticky');
+    if (card) {
+      const cat = categories.find(c => c.name === card.dataset.catName);
+      if (cat) navigateToCategory(cat.name, cat.types);
+    }
+  });
+
+  // The 分類 field in the add/edit-manga modal draws from the same list,
+  // limited to categories usable for 追漫 (types includes 'manga').
+  function renderGenreOptions(){
+    const select = document.getElementById('fGenre');
+    const prevValue = select.value;
+    const mangaCats = categories.filter(c => c.types.includes('manga'));
+    select.innerHTML = '<option value="">未分類</option>' +
+      mangaCats.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+    if (mangaCats.some(c => c.name === prevValue)) select.value = prevValue;
+  }
+
+  catTypeFilters.addEventListener('click', (e) => {
+    const btn = e.target.closest('span[data-cattype]');
+    if (!btn) return;
+    activeCatFilter = btn.dataset.cattype;
+    catTypeFilters.querySelectorAll('span').forEach(s => s.classList.toggle('on', s === btn));
+    renderCategoryList();
+  });
+
+  const catBackdrop = document.getElementById('addCatBackdrop');
+  const catFab = document.getElementById('fabAddCat');
+
+  function openAddCatModal(){
+    document.getElementById('newCatNameInput').value = '';
+    document.getElementById('newCatTypeManga').checked = true;
+    document.getElementById('newCatTypeBook').checked = false;
+    catBackdrop.classList.add('open');
+    document.getElementById('newCatNameInput').focus();
+  }
+  function closeAddCatModal(){
+    catBackdrop.classList.remove('open');
+  }
+  catFab.addEventListener('click', openAddCatModal);
+  document.getElementById('openAddCat').addEventListener('click', openAddCatModal);
+  document.getElementById('closeAddCat').addEventListener('click', closeAddCatModal);
+  document.getElementById('cancelAddCat').addEventListener('click', closeAddCatModal);
+  catBackdrop.addEventListener('click', (e) => { if (e.target === catBackdrop) closeAddCatModal(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && catBackdrop.classList.contains('open')) closeAddCatModal(); });
+
+  document.getElementById('addCatBtn').addEventListener('click', () => {
+    const input = document.getElementById('newCatNameInput');
+    const name = input.value.trim();
+    if (!name) {
+      input.focus();
+      input.style.borderColor = '#c0392b';
+      setTimeout(() => { input.style.borderColor = ''; }, 1200);
+      return;
+    }
+    const types = [];
+    if (document.getElementById('newCatTypeManga').checked) types.push('manga');
+    if (document.getElementById('newCatTypeBook').checked) types.push('book');
+    if (types.length === 0) types.push('manga'); // at least one type required
+    if (categories.some(c => c.name === name)) { input.value = ''; return; }
+    categories.push({ name, types, count: 0 });
+    renderCategoryList();
+    renderGenreOptions();
+    renderBookGenreOptions();
+    closeAddCatModal();
+    showToast('✅ 新增成功！分類已建立');
+  });
+
+  renderCategoryList();
+  renderGenreOptions();
+
+  // =====================================================================
+  // Reading statuses — configurable from the 設置 page, and shared with
+  // the 閱讀狀態 select in the add/edit-manga modal. Each status stores
+  // its own color, editable by clicking its swatch (cycles the palette).
+  // =====================================================================
+  const statusColorPalette = ['marker', 'mint', 'pink', 'gray', 'sky', 'lavender'];
+  const statusColorHex = {
+    marker: '#e8c34a', mint: '#9fc6ab', pink: '#e39aa0', gray: '#c9c4b4',
+    sky: '#93b8d8', lavender: '#c3a8d8',
+  };
+  const readingStatuses = [
+    { name: '連載中',   color: 'marker', types: ['manga', 'book'] },
+    { name: '快追上了', color: 'mint',   types: ['manga', 'book'] },
+    { name: '已完結',   color: 'pink',   types: ['manga', 'book'] },
+    { name: '已棄坑',   color: 'gray',   types: ['manga', 'book'] },
+  ];
+
+  function statusColorClass(name){
+    const s = readingStatuses.find(s => s.name === name);
+    return s ? s.color : 'marker';
+  }
+
+  const statusListEl = document.getElementById('statusList');
+
+  function renderStatusList(){
+    statusListEl.innerHTML = readingStatuses.map((s) => {
+      const typeValue = (s.types.includes('manga') && s.types.includes('book')) ? 'both'
+        : s.types.includes('manga') ? 'manga' : 'book';
+      return `
+      <div class="cat-pill ${s.color}">
+        <span class="color-swatch" data-status="${s.name}" title="點擊切換顏色" style="background:${statusColorHex[s.color]}"></span>
+        ${s.name}
+        <select class="status-type-select" data-status="${s.name}" title="套用範圍">
+          <option value="both" ${typeValue === 'both' ? 'selected' : ''}>追漫＋實體書</option>
+          <option value="manga" ${typeValue === 'manga' ? 'selected' : ''}>僅追漫</option>
+          <option value="book" ${typeValue === 'book' ? 'selected' : ''}>僅實體書</option>
+        </select>
+        <span class="remove-btn" data-status="${s.name}" title="移除">✕</span>
+      </div>
+    `;
+    }).join('');
+  }
+
+  function getDefaultMangaStatus(){
+    const list = readingStatuses.filter(s => s.types.includes('manga'));
+    return (list.length ? list : readingStatuses)[0].name;
+  }
+  function getDefaultBookStatus(){
+    const list = readingStatuses.filter(s => s.types.includes('book'));
+    return (list.length ? list : readingStatuses)[0].name;
+  }
+
+  function renderStatusOptions(){
+    const mangaStatuses = readingStatuses.filter(s => s.types.includes('manga'));
+    const mangaList = mangaStatuses.length ? mangaStatuses : readingStatuses;
+    const select = document.getElementById('fStatus');
+    const prevValue = select.value;
+    select.innerHTML = mangaList.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+    if (mangaList.some(s => s.name === prevValue)) select.value = prevValue;
+
+    const bookStatuses = readingStatuses.filter(s => s.types.includes('book'));
+    const bookList = bookStatuses.length ? bookStatuses : readingStatuses;
+    const bSelect = document.getElementById('bStatus');
+    if (bSelect) {
+      const bPrevValue = bSelect.value;
+      bSelect.innerHTML = bookList.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+      if (bookList.some(s => s.name === bPrevValue)) bSelect.value = bPrevValue;
+    }
+  }
+
+  // The filter pills at the top of the 追漫 board (全部 / 連載中 / 快追上了 / …)
+  // mirror whatever statuses currently exist, so renaming/adding/removing a
+  // status in 設置 is reflected there immediately instead of drifting out
+  // of sync with hard-coded labels.
+  const mangaStatusFiltersEl = document.getElementById('mangaStatusFilters');
+  function renderMangaStatusFilters(){
+    if (!mangaStatusFiltersEl) return;
+    const mangaStatuses = readingStatuses.filter(s => s.types.includes('manga'));
+    const list = mangaStatuses.length ? mangaStatuses : readingStatuses;
+    mangaStatusFiltersEl.innerHTML = list.map(s => `<span>${s.name}</span>`).join('');
+  }
+
+  // Same idea for the 實體書 board's filter row.
+  const bookStatusFiltersEl = document.getElementById('bookStatusFilters');
+  function renderBookStatusFilters(){
+    if (!bookStatusFiltersEl) return;
+    const bookStatuses = readingStatuses.filter(s => s.types.includes('book'));
+    const list = bookStatuses.length ? bookStatuses : readingStatuses;
+    bookStatusFiltersEl.innerHTML = list.map(s => `<span>${s.name}</span>`).join('');
+  }
+
+  statusListEl.addEventListener('click', (e) => {
+    const swatch = e.target.closest('.color-swatch');
+    if (swatch) {
+      const s = readingStatuses.find(s => s.name === swatch.dataset.status);
+      if (s) {
+        const nextIdx = (statusColorPalette.indexOf(s.color) + 1) % statusColorPalette.length;
+        s.color = statusColorPalette[nextIdx];
+        renderStatusList();
+      }
+      return;
+    }
+    const removeBtn = e.target.closest('.remove-btn');
+    if (removeBtn) {
+      if (readingStatuses.length <= 1) return; // always keep at least one status
+      const removedName = removeBtn.dataset.status;
+      const idx = readingStatuses.findIndex(s => s.name === removedName);
+      if (idx > -1) readingStatuses.splice(idx, 1);
+      renderStatusList();
+      renderStatusOptions();
+      renderMangaStatusFilters();
+      renderBookStatusFilters();
+      if (typeof activeMangaFilter !== 'undefined' && activeMangaFilter === removedName) {
+        filterMangaCards('all');
+      }
+      if (typeof activeBookFilter !== 'undefined' && activeBookFilter === removedName) {
+        filterBookCards('all');
+      }
+    }
+  });
+
+  statusListEl.addEventListener('change', (e) => {
+    const select = e.target.closest('.status-type-select');
+    if (!select) return;
+    const s = readingStatuses.find(s => s.name === select.dataset.status);
+    if (!s) return;
+    const typeValue = select.value; // 'both' | 'manga' | 'book'
+    s.types = typeValue === 'both' ? ['manga', 'book'] : [typeValue];
+    renderStatusOptions();
+    renderMangaStatusFilters();
+    renderBookStatusFilters();
+  });
+
+  document.getElementById('addStatusBtn').addEventListener('click', () => {
+    const input = document.getElementById('newStatusInput');
+    const name = input.value.trim();
+    if (!name) { input.focus(); return; }
+    if (readingStatuses.some(s => s.name === name)) { input.value = ''; return; }
+    const typeValue = document.getElementById('newStatusType').value; // 'both' | 'manga' | 'book'
+    const types = typeValue === 'both' ? ['manga', 'book'] : [typeValue];
+    const nextColor = statusColorPalette[readingStatuses.length % statusColorPalette.length];
+    readingStatuses.push({ name, color: nextColor, types });
+    input.value = '';
+    renderStatusList();
+    renderStatusOptions();
+    renderMangaStatusFilters();
+    renderBookStatusFilters();
+  });
+
+  renderStatusList();
+  renderStatusOptions();
+  renderMangaStatusFilters();
+  renderBookStatusFilters();
+
+  // .nav-link covers both the desktop top-nav <a> tags and the mobile
+  // bottom tab-bar <button> tags — they're kept in sync so switching
+  // browser width mid-session (or resizing) never leaves them out of step.
+  const links = document.querySelectorAll('.nav-link');
+  const views = {
+    manga: document.getElementById('view-manga'),
+    books: document.getElementById('view-books'),
+    cats: document.getElementById('view-cats'),
+    settings: document.getElementById('view-settings'),
+  };
+  function setActiveView(name){
+    links.forEach(l => l.classList.toggle('active', l.dataset.view === name));
+    Object.entries(views).forEach(([key, el]) => el.classList.toggle('active', key === name));
+    window.scrollTo({top:0, behavior:'instant'});
+    fab.classList.toggle('show', name === 'manga');
+    bookFab.classList.toggle('show', name === 'books');
+    catFab.classList.toggle('show', name === 'cats');
+  }
+  links.forEach(link => {
+    link.addEventListener('click', () => setActiveView(link.dataset.view));
+  });
+
+  // ===== Add/Edit-manga modal (shared template) =====
+  const fab = document.getElementById('fabAddManga');
+  const backdrop = document.getElementById('addMangaBackdrop');
+  const form = document.getElementById('addMangaForm');
+  const mangaBoard = document.querySelector('#view-manga .board');
+  const allCountFilter = document.querySelector('#view-manga .filters span.on');
+  const modalEyebrow = document.getElementById('modalEyebrow');
+  const submitBtn = document.getElementById('submitAddManga');
+  let mangaCount = 24;
+  let editingCard = null; // null = add mode; a .sticky element = edit mode
+  fab.classList.add('show'); // manga is the default active view
+
+  function resetFormFields(){
+    form.reset();
+    document.getElementById('fTitle').value = '';
+    renderGenreOptions(); // clears any temporary "legacy value" option
+    document.getElementById('fGenre').value = '';
+    document.getElementById('fStatus').value = getDefaultMangaStatus();
+    coverBanner.classList.remove('has-image');
+    coverBanner.style.backgroundImage = '';
+    coverBanner.style.backgroundPosition = '50% 50%';
+    coverBanner.style.backgroundSize = 'cover';
+    coverBanner.style.height = '';
+    modalInner.style.minHeight = '';
+    coverBtnLabel.textContent = '＋ 新增封面';
+    coverFitBtn.textContent = '⛶ 顯示全圖';
+    selectedCoverUrl = null;
+    selectedCoverPosX = 50;
+    selectedCoverPosY = 50;
+    selectedCoverFit = 'cover';
+  }
+
+  // Reads an existing card's DOM back into the same shape the form uses,
+  // so opening "edit" on any card — hand-authored or created via this
+  // modal — pre-fills correctly.
+  function parseCardData(cardEl){
+    const h3 = cardEl.querySelector('.info h3');
+    const title = h3.textContent.trim();
+    const readBtn = cardEl.querySelector('.read-link-btn');
+    const link = readBtn ? readBtn.getAttribute('href') : '';
+    const genre = cardEl.querySelector('.info .meta').textContent.trim();
+    const authorEl = cardEl.querySelector('.info .author-line');
+    const author = authorEl ? authorEl.textContent.replace('✍️', '').trim() : '';
+    const prowSpans = cardEl.querySelectorAll('.prow span');
+    const leftText = prowSpans[0] ? prowSpans[0].textContent : '0 話';
+    const rightText = prowSpans[1] ? prowSpans[1].textContent.trim() : '連載中';
+    const current = parseInt(leftText, 10) || 0;
+
+    let total = null;
+    const totalMatch = rightText.match(/(\d+)/);
+    if (rightText.includes('/') && totalMatch) {
+      total = parseInt(totalMatch[1], 10);
+    } else if (rightText === '已補完') {
+      total = current;
+    } // '連載中' (or anything else) → total stays null, i.e. ongoing
+
+    const tagEl = cardEl.querySelector('.cover .tag');
+    const tagText = tagEl ? tagEl.textContent.trim() : '';
+    const status = readingStatuses.some(s => s.name === tagText) ? tagText : getDefaultMangaStatus();
+
+    // Cover image only exists if it was previously set via this modal
+    // (hand-authored cards use the plain text-on-pattern placeholder).
+    const coverEl = cardEl.querySelector('.cover');
+    let coverUrl = null, coverPosX = 50, coverPosY = 50, coverFit = 'cover';
+    const bgImage = coverEl.style.backgroundImage;
+    if (bgImage && bgImage !== 'none' && bgImage !== '') {
+      const urlMatch = bgImage.match(/url\(["']?(.*?)["']?\)/);
+      if (urlMatch) coverUrl = urlMatch[1];
+      const bgPos = coverEl.style.backgroundPosition;
+      if (bgPos) {
+        const parts = bgPos.split(' ');
+        if (parts[0]) coverPosX = parseFloat(parts[0]) || 50;
+        if (parts[1]) coverPosY = parseFloat(parts[1]) || 50;
+      }
+      if (coverEl.style.backgroundSize === 'contain') coverFit = 'contain';
+    }
+    return { title, genre, author, link, current, total, status, coverUrl, coverPosX, coverPosY, coverFit };
+  }
+
+  function openAddModal(){
+    editingCard = null;
+    resetFormFields();
+    modalEyebrow.textContent = '📌 新增追漫作品';
+    submitBtn.textContent = '貼上書架';
+    backdrop.classList.add('open');
+    document.getElementById('fTitle').focus();
+  }
+
+  function openEditModal(cardEl){
+    editingCard = cardEl;
+    resetFormFields();
+    const data = parseCardData(cardEl);
+    document.getElementById('fTitle').value = data.title;
+    const genreSelect = document.getElementById('fGenre');
+    const genreValue = data.genre === '未分類' ? '' : data.genre;
+    if (genreValue && ![...genreSelect.options].some(o => o.value === genreValue)) {
+      // Legacy/free-text value with no matching category — keep it visible
+      // as a temporary option rather than silently resetting to "未分類".
+      const tempOpt = document.createElement('option');
+      tempOpt.value = genreValue;
+      tempOpt.textContent = `${genreValue}（未收錄分類）`;
+      genreSelect.appendChild(tempOpt);
+    }
+    genreSelect.value = genreValue;
+    document.getElementById('fAuthor').value = data.author || '';
+    document.getElementById('fLink').value = data.link || '';
+    document.getElementById('fCurrent').value = data.current || '';
+    document.getElementById('fTotal').value = data.total !== null ? data.total : '';
+    document.getElementById('fStatus').value = data.status;
+    if (data.coverUrl) {
+      selectedCoverUrl = data.coverUrl;
+      selectedCoverPosX = data.coverPosX;
+      selectedCoverPosY = data.coverPosY;
+      selectedCoverFit = data.coverFit;
+      coverBanner.style.backgroundImage = `url('${data.coverUrl}')`;
+      coverBanner.style.backgroundPosition = `${data.coverPosX}% ${data.coverPosY}%`;
+      coverBanner.style.backgroundSize = data.coverFit;
+      coverBanner.classList.add('has-image');
+      coverBtnLabel.textContent = '✎ 更換封面';
+      coverFitBtn.textContent = data.coverFit === 'cover' ? '⛶ 顯示全圖' : '⛶ 填滿裁切';
+    }
+    modalEyebrow.textContent = '✎ 編輯追漫作品';
+    submitBtn.textContent = '儲存變更';
+    backdrop.classList.add('open');
+    document.getElementById('fTitle').focus();
+  }
+
+  function closeModal(){
+    backdrop.classList.remove('open');
+    resetFormFields();
+    editingCard = null;
+  }
+
+  // Clicking anywhere on a card opens edit — works for both the 8
+  // hand-authored cards and any card created later by this same modal.
+  mangaBoard.addEventListener('click', (e) => {
+    const card = e.target.closest('.sticky');
+    if (card) openEditModal(card);
+  });
+
+  fab.addEventListener('click', openAddModal);
+  document.getElementById('openAddManga').addEventListener('click', openAddModal);
+  document.getElementById('closeAddManga').addEventListener('click', closeModal);
+  document.getElementById('cancelAddManga').addEventListener('click', closeModal);
+  backdrop.addEventListener('click', (e) => { if (e.target === backdrop) closeModal(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && backdrop.classList.contains('open')) closeModal(); });
+
+  // ===== Cover image upload + preview (Notion-style banner) =====
+  const coverInput = document.getElementById('fCover');
+  const coverBanner = document.getElementById('coverBanner');
+  const coverBtnLabel = document.getElementById('coverBtnLabel');
+  const modalInner = document.querySelector('.modal-inner');
+  let selectedCoverUrl = null;
+  let selectedCoverPosX = 50; // percentage, for background-position
+  let selectedCoverPosY = 50;
+  let selectedCoverFit = 'cover'; // 'cover' (fills, crops) or 'contain' (shows full image)
+  const coverFitBtn = document.getElementById('coverFitBtn');
+
+  // Clicking the pill button opens the (hidden) file picker — the banner
+  // itself is reserved for drag-to-reposition once an image is set.
+  coverBtnLabel.addEventListener('pointerdown', (e) => e.stopPropagation());
+  coverBtnLabel.addEventListener('click', () => coverInput.click());
+
+  coverInput.addEventListener('change', () => {
+    const file = coverInput.files && coverInput.files[0];
+    if (!file) return;
+    // Use a base64 data URL rather than URL.createObjectURL(): some preview
+    // environments apply a CSP that blocks blob: image sources, but data:
+    // URLs are embedded directly and always render.
+    const reader = new FileReader();
+    reader.onload = () => {
+      selectedCoverUrl = reader.result;
+      selectedCoverPosX = 50;
+      selectedCoverPosY = 50;
+      selectedCoverFit = 'cover';
+      coverFitBtn.textContent = '⛶ 顯示全圖';
+      coverBanner.style.backgroundImage = `url('${selectedCoverUrl}')`;
+      coverBanner.style.backgroundPosition = '50% 50%';
+      coverBanner.style.backgroundSize = 'cover';
+      coverBanner.classList.add('has-image');
+      coverBtnLabel.textContent = '✎ 更換封面';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  coverFitBtn.addEventListener('pointerdown', (e) => e.stopPropagation());
+  coverFitBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    selectedCoverFit = selectedCoverFit === 'cover' ? 'contain' : 'cover';
+    coverBanner.style.backgroundSize = selectedCoverFit;
+    coverFitBtn.textContent = selectedCoverFit === 'cover' ? '⛶ 顯示全圖' : '⛶ 填滿裁切';
+  });
+
+  // Focusing the banner (click it) makes it visually obvious pasting will
+  // land here — otherwise there's no cue that Ctrl/Cmd+V is even listening.
+  const coverPasteHint = document.querySelector('#coverBanner .cover-paste-hint');
+  coverBanner.addEventListener('focus', () => { coverPasteHint.textContent = '✅ 已就緒，貼上圖片或圖片網址吧！'; });
+  coverBanner.addEventListener('blur', () => { coverPasteHint.textContent = '📋 也可直接貼上圖片或圖片網址（Ctrl/Cmd+V）'; });
+
+  // Drag-to-reposition: lets the person pan the uploaded image within the
+  // banner so the important part of the artwork ends up visible on the card.
+  let dragging = false;
+  let dragStartX = 0, dragStartY = 0, dragStartPosX = 50, dragStartPosY = 50;
+
+  coverBanner.addEventListener('pointerdown', (e) => {
+    if (!coverBanner.classList.contains('has-image')) return;
+    dragging = true;
+    coverBanner.classList.add('dragging');
+    coverBanner.setPointerCapture(e.pointerId);
+    dragStartX = e.clientX;
+    dragStartY = e.clientY;
+    dragStartPosX = selectedCoverPosX;
+    dragStartPosY = selectedCoverPosY;
+  });
+  coverBanner.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    const rect = coverBanner.getBoundingClientRect();
+    const dxPct = ((e.clientX - dragStartX) / rect.width) * 100;
+    const dyPct = ((e.clientY - dragStartY) / rect.height) * 100;
+    selectedCoverPosX = Math.min(100, Math.max(0, dragStartPosX + dxPct));
+    selectedCoverPosY = Math.min(100, Math.max(0, dragStartPosY + dyPct));
+    coverBanner.style.backgroundPosition = `${selectedCoverPosX}% ${selectedCoverPosY}%`;
+  });
+  function endCoverDrag(){
+    dragging = false;
+    coverBanner.classList.remove('dragging');
+  }
+  coverBanner.addEventListener('pointerup', endCoverDrag);
+  coverBanner.addEventListener('pointercancel', endCoverDrag);
+  coverBanner.addEventListener('pointerleave', endCoverDrag);
+
+  // Drag the bottom handle to resize the cover banner's height itself
+  // (separate from panning the image within it).
+  const coverResizeHandle = document.getElementById('coverResizeHandle');
+  const COVER_MIN_H = 90;
+  const COVER_MAX_H = 360;
+  let resizingCover = false;
+  let resizeStartY = 0;
+  let resizeStartHeight = 150;
+
+  coverResizeHandle.addEventListener('pointerdown', (e) => {
+    e.stopPropagation(); // don't also trigger the banner's pan-drag
+    resizingCover = true;
+    coverResizeHandle.classList.add('resizing');
+    coverResizeHandle.setPointerCapture(e.pointerId);
+    resizeStartY = e.clientY;
+    resizeStartHeight = coverBanner.getBoundingClientRect().height;
+  });
+  coverResizeHandle.addEventListener('pointermove', (e) => {
+    if (!resizingCover) return;
+    const dy = e.clientY - resizeStartY;
+    const newHeight = Math.min(COVER_MAX_H, Math.max(COVER_MIN_H, resizeStartHeight + dy));
+    coverBanner.style.height = `${newHeight}px`;
+    modalInner.style.minHeight = `calc(100% - ${newHeight}px)`;
+  });
+  function endCoverResize(){
+    resizingCover = false;
+    coverResizeHandle.classList.remove('resizing');
+  }
+  coverResizeHandle.addEventListener('pointerup', endCoverResize);
+  coverResizeHandle.addEventListener('pointercancel', endCoverResize);
+
+  // ===== Success toast =====
+  const toast = document.getElementById('successToast');
+  let toastTimer = null;
+  function showToast(message){
+    if (message) toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+
+  // Bound to a plain button click (not the form's "submit" event) so this
+  // still works reliably inside sandboxed / restricted preview environments.
+  document.getElementById('submitAddManga').addEventListener('click', () => {
+    const titleInput = document.getElementById('fTitle');
+    const title = titleInput.value.trim();
+    if (!title) {
+      titleInput.focus();
+      titleInput.style.borderColor = '#c0392b';
+      setTimeout(() => { titleInput.style.borderColor = ''; }, 1200);
+      return;
+    }
+    const genre = document.getElementById('fGenre').value.trim();
+    const author = document.getElementById('fAuthor').value.trim();
+    const link = document.getElementById('fLink').value.trim();
+    const current = parseInt(document.getElementById('fCurrent').value, 10) || 0;
+    const totalRaw = document.getElementById('fTotal').value;
+    const total = totalRaw ? parseInt(totalRaw, 10) : null;
+    const status = document.getElementById('fStatus').value;
+    const statusTagClass = statusColorClass(status);
+
+    const metaText = genre || '未分類';
+    const pct = total ? Math.min(100, Math.round((current / total) * 100)) : (current > 0 ? 100 : 0);
+    const rightLabel = total ? `/ ${total}` : '連載中';
+    const coverStyle = selectedCoverUrl
+      ? `background-image:url('${selectedCoverUrl}'); background-size:${selectedCoverFit}; background-position:${selectedCoverPosX}% ${selectedCoverPosY}%;`
+      : '';
+    const safeLink = link.replace(/"/g, '&quot;');
+    const authorLineHtml = author ? `<div class="author-line">✍️ ${author}</div>` : '';
+    const readBtnHtml = link
+      ? `<a href="${safeLink}" target="_blank" rel="noopener" class="read-link-btn" onclick="event.stopPropagation()">▶ 閱讀漫畫</a>`
+      : '';
+
+    const cardInnerHtml = `
+      <div class="pin"></div>
+      
+      <div class="cover" style="${coverStyle}">
+        ${selectedCoverUrl ? '' : `<span>${title}</span>`}
+        <div class="tag ${statusTagClass}">${status}</div>
+      </div>
+      <div class="info">
+        <h3>${title}</h3>
+        ${authorLineHtml}
+        <div class="meta">${metaText}</div>
+        <div class="prow"><span>${current} 話</span><span>${rightLabel}</span></div>
+        <div class="track"><i style="width:${pct}%"></i></div>
+        ${readBtnHtml}
+      </div>
+    `;
+
+    if (editingCard) {
+      // Edit mode: update the existing card in place, keep its position.
+      editingCard.innerHTML = cardInnerHtml;
+    } else {
+      // Add mode: create a new card and pin it to the front of the board.
+      const card = document.createElement('div');
+      card.className = 'sticky';
+      card.innerHTML = cardInnerHtml;
+      mangaBoard.prepend(card);
+      mangaCount += 1;
+      if (allCountFilter) allCountFilter.textContent = `全部 ${mangaCount}`;
+    }
+
+    const wasEditing = !!editingCard;
+    closeModal();
+    setActiveView('manga');
+    showToast(wasEditing ? '✅ 已儲存變更' : '✅ 新增成功！已貼上書架');
+    filterMangaCards(activeMangaFilter); // keep respecting whatever filter is active
+  });
+
+  // =====================================================================
+  // Add/Edit-book modal — cloned from the 追漫 modal above, adapted for
+  // physical book collection (volumes instead of chapters, condition
+  // chips instead of a single reading status, publisher/shelf fields).
+  // =====================================================================
+  const bookFab = document.getElementById('fabAddBook');
+  const bookBackdrop = document.getElementById('addBookBackdrop');
+  const bookForm = document.getElementById('addBookForm');
+  const bookModalEyebrow = document.getElementById('bookModalEyebrow');
+  const bookSubmitBtn = document.getElementById('submitAddBook');
+  const bookCoverInput = document.getElementById('bCover');
+  const bookCoverBanner = document.getElementById('bookCoverBanner');
+  const bookCoverBtnLabel = document.getElementById('bookCoverBtnLabel');
+  const bookModalInner = document.querySelector('#addBookBackdrop .modal-inner');
+  let bookCount = 15;
+  let editingBookCard = null;
+  let selectedBookCoverUrl = null;
+  let selectedBookCoverPosX = 50;
+  let selectedBookCoverPosY = 50;
+  let selectedBookCoverFit = 'cover';
+  const bookCoverFitBtn = document.getElementById('bookCoverFitBtn');
+
+  function renderBookGenreOptions(){
+    const select = document.getElementById('bGenre');
+    const prevValue = select.value;
+    const bookCats = categories.filter(c => c.types.includes('book'));
+    select.innerHTML = '<option value="">未分類</option>' +
+      bookCats.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+    if (bookCats.some(c => c.name === prevValue)) select.value = prevValue;
+  }
+  renderBookGenreOptions();
+
+  function resetBookFormFields(){
+    bookForm.reset();
+    document.getElementById('bTitle').value = '';
+    renderBookGenreOptions();
+    document.getElementById('bGenre').value = '';
+    document.getElementById('bStatus').value = getDefaultBookStatus();
+    bookCoverBanner.classList.remove('has-image');
+    bookCoverBanner.style.backgroundImage = '';
+    bookCoverBanner.style.backgroundPosition = '50% 50%';
+    bookCoverBanner.style.backgroundSize = 'cover';
+    bookCoverBanner.style.height = '';
+    bookModalInner.style.minHeight = '';
+    bookCoverBtnLabel.textContent = '＋ 新增封面';
+    bookCoverFitBtn.textContent = '⛶ 顯示全圖';
+    selectedBookCoverUrl = null;
+    selectedBookCoverPosX = 50;
+    selectedBookCoverPosY = 50;
+    selectedBookCoverFit = 'cover';
+  }
+
+  function parseBookCardData(cardEl){
+    const title = cardEl.querySelector('.info h3').textContent.trim();
+    const metaParts = cardEl.querySelector('.info .meta').textContent.split('・');
+    const publisher = (metaParts[0] || '').trim();
+    const shelf = (metaParts[1] || '').trim();
+    const chipEl = cardEl.querySelector('.chips .chip');
+    const genre = chipEl ? chipEl.textContent.trim() : '';
+    const tagEl = cardEl.querySelector('.cover .tag');
+    const tagText = tagEl ? tagEl.textContent.trim() : '';
+    const status = readingStatuses.some(s => s.name === tagText) ? tagText : getDefaultBookStatus();
+
+    // Cards may have one row (legacy, pre-edition-split) or two rows
+    // (🇯🇵 日版 / 🇹🇼 台版). Detect by flag emoji in the left span.
+    const prows = cardEl.querySelectorAll('.prow');
+    let jp = { current: 0, total: null };
+    let tw = { current: 0, total: null };
+    prows.forEach((prowEl) => {
+      const spans = prowEl.querySelectorAll('span');
+      const leftText = spans[0] ? spans[0].textContent : '';
+      const rightText = spans[1] ? spans[1].textContent.trim() : '';
+      const currentMatch = leftText.match(/(\d+)/);
+      const current = currentMatch ? parseInt(currentMatch[1], 10) : 0;
+      const totalMatch = rightText.match(/(\d+)/);
+      const total = (rightText.includes('/') && totalMatch) ? parseInt(totalMatch[1], 10) : null;
+      if (leftText.includes('🇯🇵')) {
+        jp = { current, total };
+      } else if (leftText.includes('🇹🇼')) {
+        tw = { current, total };
+      } else {
+        // Legacy single-row card with no flag — treat as 台版 for backward compatibility.
+        tw = { current, total };
+      }
+    });
+
+    const coverEl = cardEl.querySelector('.cover');
+    let coverUrl = null, coverPosX = 50, coverPosY = 50, coverFit = 'cover';
+    const bgImage = coverEl.style.backgroundImage;
+    if (bgImage && bgImage !== 'none' && bgImage !== '') {
+      const urlMatch = bgImage.match(/url\(["']?(.*?)["']?\)/);
+      if (urlMatch) coverUrl = urlMatch[1];
+      const bgPos = coverEl.style.backgroundPosition;
+      if (bgPos) {
+        const parts = bgPos.split(' ');
+        if (parts[0]) coverPosX = parseFloat(parts[0]) || 50;
+        if (parts[1]) coverPosY = parseFloat(parts[1]) || 50;
+      }
+      if (coverEl.style.backgroundSize === 'contain') coverFit = 'contain';
+    }
+    return { title, publisher, shelf, genre, status, jp, tw, coverUrl, coverPosX, coverPosY, coverFit };
+  }
+
+  function openAddBookModal(){
+    editingBookCard = null;
+    resetBookFormFields();
+    bookModalEyebrow.textContent = '📌 新增書本';
+    bookSubmitBtn.textContent = '貼上書架';
+    bookBackdrop.classList.add('open');
+    document.getElementById('bTitle').focus();
+  }
+
+  function openEditBookModal(cardEl){
+    editingBookCard = cardEl;
+    resetBookFormFields();
+    const data = parseBookCardData(cardEl);
+    document.getElementById('bTitle').value = data.title;
+    const bGenreSelect = document.getElementById('bGenre');
+    if (data.genre && ![...bGenreSelect.options].some(o => o.value === data.genre)) {
+      const tempOpt = document.createElement('option');
+      tempOpt.value = data.genre;
+      tempOpt.textContent = `${data.genre}（未收錄分類）`;
+      bGenreSelect.appendChild(tempOpt);
+    }
+    bGenreSelect.value = data.genre || '';
+    document.getElementById('bPublisher').value = data.publisher || '';
+    document.getElementById('bShelf').value = data.shelf || '';
+    document.getElementById('bJpCurrent').value = data.jp.current || '';
+    document.getElementById('bJpTotal').value = data.jp.total !== null ? data.jp.total : '';
+    document.getElementById('bTwCurrent').value = data.tw.current || '';
+    document.getElementById('bTwTotal').value = data.tw.total !== null ? data.tw.total : '';
+    document.getElementById('bStatus').value = data.status;
+    if (data.coverUrl) {
+      selectedBookCoverUrl = data.coverUrl;
+      selectedBookCoverPosX = data.coverPosX;
+      selectedBookCoverPosY = data.coverPosY;
+      selectedBookCoverFit = data.coverFit;
+      bookCoverBanner.style.backgroundImage = `url('${data.coverUrl}')`;
+      bookCoverBanner.style.backgroundPosition = `${data.coverPosX}% ${data.coverPosY}%`;
+      bookCoverBanner.style.backgroundSize = data.coverFit;
+      bookCoverBanner.classList.add('has-image');
+      bookCoverBtnLabel.textContent = '✎ 更換封面';
+      bookCoverFitBtn.textContent = data.coverFit === 'cover' ? '⛶ 顯示全圖' : '⛶ 填滿裁切';
+    }
+    bookModalEyebrow.textContent = '✎ 編輯書本';
+    bookSubmitBtn.textContent = '儲存變更';
+    bookBackdrop.classList.add('open');
+    document.getElementById('bTitle').focus();
+  }
+
+  function closeBookModal(){
+    bookBackdrop.classList.remove('open');
+    resetBookFormFields();
+    editingBookCard = null;
+  }
+
+  bookFab.addEventListener('click', openAddBookModal);
+  document.getElementById('openAddBook').addEventListener('click', openAddBookModal);
+  document.getElementById('closeAddBook').addEventListener('click', closeBookModal);
+  document.getElementById('cancelAddBook').addEventListener('click', closeBookModal);
+  bookBackdrop.addEventListener('click', (e) => { if (e.target === bookBackdrop) closeBookModal(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && bookBackdrop.classList.contains('open')) closeBookModal(); });
+
+  document.querySelector('#view-books .board').addEventListener('click', (e) => {
+    const card = e.target.closest('.sticky');
+    if (card) openEditBookModal(card);
+  });
+
+  bookCoverBtnLabel.addEventListener('pointerdown', (e) => e.stopPropagation());
+  bookCoverBtnLabel.addEventListener('click', () => bookCoverInput.click());
+  bookCoverInput.addEventListener('change', () => {
+    const file = bookCoverInput.files && bookCoverInput.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      selectedBookCoverUrl = reader.result;
+      selectedBookCoverPosX = 50;
+      selectedBookCoverPosY = 50;
+      selectedBookCoverFit = 'cover';
+      bookCoverFitBtn.textContent = '⛶ 顯示全圖';
+      bookCoverBanner.style.backgroundImage = `url('${selectedBookCoverUrl}')`;
+      bookCoverBanner.style.backgroundPosition = '50% 50%';
+      bookCoverBanner.style.backgroundSize = 'cover';
+      bookCoverBanner.classList.add('has-image');
+      bookCoverBtnLabel.textContent = '✎ 更換封面';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  bookCoverFitBtn.addEventListener('pointerdown', (e) => e.stopPropagation());
+  bookCoverFitBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    selectedBookCoverFit = selectedBookCoverFit === 'cover' ? 'contain' : 'cover';
+    bookCoverBanner.style.backgroundSize = selectedBookCoverFit;
+    bookCoverFitBtn.textContent = selectedBookCoverFit === 'cover' ? '⛶ 顯示全圖' : '⛶ 填滿裁切';
+  });
+
+  const bookCoverPasteHint = document.querySelector('#bookCoverBanner .cover-paste-hint');
+  bookCoverBanner.addEventListener('focus', () => { bookCoverPasteHint.textContent = '✅ 已就緒，貼上圖片或圖片網址吧！'; });
+  bookCoverBanner.addEventListener('blur', () => { bookCoverPasteHint.textContent = '📋 也可直接貼上圖片或圖片網址（Ctrl/Cmd+V）'; });
+
+  let bookDragging = false, bookDragStartX = 0, bookDragStartY = 0, bookDragStartPosX = 50, bookDragStartPosY = 50;
+  bookCoverBanner.addEventListener('pointerdown', (e) => {
+    if (!bookCoverBanner.classList.contains('has-image')) return;
+    bookDragging = true;
+    bookCoverBanner.classList.add('dragging');
+    bookCoverBanner.setPointerCapture(e.pointerId);
+    bookDragStartX = e.clientX; bookDragStartY = e.clientY;
+    bookDragStartPosX = selectedBookCoverPosX; bookDragStartPosY = selectedBookCoverPosY;
+  });
+  bookCoverBanner.addEventListener('pointermove', (e) => {
+    if (!bookDragging) return;
+    const rect = bookCoverBanner.getBoundingClientRect();
+    selectedBookCoverPosX = Math.min(100, Math.max(0, bookDragStartPosX + ((e.clientX - bookDragStartX) / rect.width) * 100));
+    selectedBookCoverPosY = Math.min(100, Math.max(0, bookDragStartPosY + ((e.clientY - bookDragStartY) / rect.height) * 100));
+    bookCoverBanner.style.backgroundPosition = `${selectedBookCoverPosX}% ${selectedBookCoverPosY}%`;
+  });
+  function endBookCoverDrag(){ bookDragging = false; bookCoverBanner.classList.remove('dragging'); }
+  bookCoverBanner.addEventListener('pointerup', endBookCoverDrag);
+  bookCoverBanner.addEventListener('pointercancel', endBookCoverDrag);
+  bookCoverBanner.addEventListener('pointerleave', endBookCoverDrag);
+
+  const bookCoverResizeHandle = document.getElementById('bookCoverResizeHandle');
+  let bookResizing = false, bookResizeStartY = 0, bookResizeStartHeight = 150;
+  bookCoverResizeHandle.addEventListener('pointerdown', (e) => {
+    e.stopPropagation();
+    bookResizing = true;
+    bookCoverResizeHandle.classList.add('resizing');
+    bookCoverResizeHandle.setPointerCapture(e.pointerId);
+    bookResizeStartY = e.clientY;
+    bookResizeStartHeight = bookCoverBanner.getBoundingClientRect().height;
+  });
+  bookCoverResizeHandle.addEventListener('pointermove', (e) => {
+    if (!bookResizing) return;
+    const newHeight = Math.min(360, Math.max(90, bookResizeStartHeight + (e.clientY - bookResizeStartY)));
+    bookCoverBanner.style.height = `${newHeight}px`;
+    bookModalInner.style.minHeight = `calc(100% - ${newHeight}px)`;
+  });
+  function endBookResize(){ bookResizing = false; bookCoverResizeHandle.classList.remove('resizing'); }
+  bookCoverResizeHandle.addEventListener('pointerup', endBookResize);
+  bookCoverResizeHandle.addEventListener('pointercancel', endBookResize);
+
+  bookSubmitBtn.addEventListener('click', () => {
+    const titleInput = document.getElementById('bTitle');
+    const title = titleInput.value.trim();
+    if (!title) {
+      titleInput.focus();
+      titleInput.style.borderColor = '#c0392b';
+      setTimeout(() => { titleInput.style.borderColor = ''; }, 1200);
+      return;
+    }
+    const genre = document.getElementById('bGenre').value.trim();
+    const publisher = document.getElementById('bPublisher').value.trim();
+    const shelf = document.getElementById('bShelf').value.trim();
+    const jpCurrent = parseInt(document.getElementById('bJpCurrent').value, 10) || 0;
+    const jpTotalRaw = document.getElementById('bJpTotal').value;
+    const jpTotal = jpTotalRaw ? parseInt(jpTotalRaw, 10) : null;
+    const twCurrent = parseInt(document.getElementById('bTwCurrent').value, 10) || 0;
+    const twTotalRaw = document.getElementById('bTwTotal').value;
+    const twTotal = twTotalRaw ? parseInt(twTotalRaw, 10) : null;
+    const status = document.getElementById('bStatus').value;
+    const statusTagClass = statusColorClass(status);
+
+    const metaText = [publisher, shelf].filter(Boolean).join('・') || '未分類出版資訊';
+    const jpPct = jpTotal ? Math.min(100, Math.round((jpCurrent / jpTotal) * 100)) : (jpCurrent > 0 ? 100 : 0);
+    const jpRightLabel = jpTotal ? `/ ${jpTotal}` : '收集中';
+    const twPct = twTotal ? Math.min(100, Math.round((twCurrent / twTotal) * 100)) : (twCurrent > 0 ? 100 : 0);
+    const twRightLabel = twTotal ? `/ ${twTotal}` : '收集中';
+
+    const tagHtml = `<div class="tag ${statusTagClass}">${status}</div>`;
+
+    const coverStyle = selectedBookCoverUrl
+      ? `background-image:url('${selectedBookCoverUrl}'); background-size:${selectedBookCoverFit}; background-position:${selectedBookCoverPosX}% ${selectedBookCoverPosY}%;`
+      : '';
+
+    // Skip an edition's progress row entirely whenever 0 copies are
+    // collected for it — regardless of whether a total was set.
+    const showJp = jpCurrent > 0;
+    const showTw = twCurrent > 0;
+    const jpRowHtml = showJp ? `
+        <div class="prow"><span>🇯🇵 ${jpCurrent} 冊</span><span>${jpRightLabel}</span></div>
+        <div class="track"><i style="width:${jpPct}%"></i></div>` : '';
+    const twRowHtml = showTw ? `
+        <div class="prow" style="margin-top:${showJp ? '8px' : '0'};"><span>🇹🇼 ${twCurrent} 冊</span><span>${twRightLabel}</span></div>
+        <div class="track"><i style="width:${twPct}%"></i></div>` : '';
+
+    const genreChipHtml = genre ? `<div class="chips"><span class="chip">${genre}</span></div>` : '';
+
+    const cardInnerHtml = `
+      <div class="pin"></div>
+      <div class="cover" style="${coverStyle}">
+        ${selectedBookCoverUrl ? '' : `<span>${title}</span>`}
+        ${tagHtml}
+      </div>
+      <div class="info">
+        <h3>${title}</h3>
+        <div class="meta">${metaText}</div>${jpRowHtml}${twRowHtml}
+        ${genreChipHtml}
+      </div>
+    `;
+
+    if (editingBookCard) {
+      editingBookCard.innerHTML = cardInnerHtml;
+    } else {
+      const card = document.createElement('div');
+      card.className = 'sticky';
+      card.innerHTML = cardInnerHtml;
+      booksBoard.prepend(card);
+      bookCount += 1;
+      const bookAllFilter = document.querySelector('#view-books .filters span.on');
+      if (bookAllFilter) bookAllFilter.textContent = `全部 ${bookCount} 套`;
+    }
+
+    const wasEditingBook = !!editingBookCard;
+    closeBookModal();
+    setActiveView('books');
+    showToast(wasEditingBook ? '✅ 已儲存變更' : '✅ 新增成功！已貼上書架');
+    applyBooksSearch();
+  });
+
+  // ===== 追漫 filter pills: click to filter cards by reading status =====
+  const mangaFiltersEl = document.querySelector('#view-manga .filters');
+  const bookFiltersEl = document.querySelector('#view-books .filters');
+  const booksBoard = document.querySelector('#view-books .board');
+  let activeMangaFilter = 'all';
+  let activeBookFilter = 'all';
+  let searchQuery = '';
+
+  function applyMangaFilters(){
+    mangaBoard.querySelectorAll('.sticky').forEach(card => {
+      const tagEl = card.querySelector('.cover .tag');
+      const tagText = tagEl ? tagEl.textContent.trim() : '';
+      const statusMatch = activeMangaFilter === 'all' || tagText === activeMangaFilter;
+      const searchable = card.querySelector('.info').textContent.toLowerCase();
+      const searchMatch = !searchQuery || searchable.includes(searchQuery);
+      card.style.display = (statusMatch && searchMatch) ? '' : 'none';
+    });
+  }
+
+  function applyBooksSearch(){
+    if (!booksBoard) return;
+    booksBoard.querySelectorAll('.sticky').forEach(card => {
+      const tagEl = card.querySelector('.cover .tag');
+      const tagText = tagEl ? tagEl.textContent.trim() : '';
+      const statusMatch = activeBookFilter === 'all' || tagText === activeBookFilter;
+      const searchable = card.querySelector('.info').textContent.toLowerCase();
+      const searchMatch = !searchQuery || searchable.includes(searchQuery);
+      card.style.display = (statusMatch && searchMatch) ? '' : 'none';
+    });
+  }
+
+  function filterMangaCards(value){
+    activeMangaFilter = value;
+
+    // Sync the pill's visual "on" state to match, in case this was called
+    // programmatically (e.g. after a status is deleted from 設置) rather
+    // than from a direct click.
+    mangaFiltersEl.querySelectorAll('span').forEach(s => {
+      if (s.id === 'openAddManga') return;
+      const sValue = s.id === 'mangaFilterAll' ? 'all' : s.textContent.trim();
+      s.classList.toggle('on', sValue === value);
+    });
+
+    applyMangaFilters();
+  }
+
+  function filterBookCards(value){
+    activeBookFilter = value;
+    bookFiltersEl.querySelectorAll('span').forEach(s => {
+      if (s.id === 'openAddBook') return;
+      const sValue = s.id === 'bookFilterAll' ? 'all' : s.textContent.trim();
+      s.classList.toggle('on', sValue === value);
+    });
+    applyBooksSearch();
+  }
+
+  mangaFiltersEl.addEventListener('click', (e) => {
+    const btn = e.target.closest('span');
+    if (!btn || btn.id === 'openAddManga') return; // the add-pill has its own handler
+    const value = btn.id === 'mangaFilterAll' ? 'all' : btn.textContent.trim();
+    filterMangaCards(value);
+  });
+
+  bookFiltersEl.addEventListener('click', (e) => {
+    const btn = e.target.closest('span');
+    if (!btn || btn.id === 'openAddBook') return; // the add-pill has its own handler
+    const value = btn.id === 'bookFilterAll' ? 'all' : btn.textContent.trim();
+    filterBookCards(value);
+  });
+
+  // ===== Header search box (desktop + mobile, kept in sync) =====
+  // Searches whichever board has cards to search — title, genre/meta text,
+  // and author line are all matched — combined with the active 追漫 status
+  // filter rather than replacing it.
+  const searchInputs = [document.getElementById('searchDesktop'), document.getElementById('searchMobile')]
+    .filter(Boolean);
+
+  function handleSearchInput(e){
+    searchQuery = e.target.value.trim().toLowerCase();
+    searchInputs.forEach(inp => { if (inp !== e.target) inp.value = e.target.value; });
+    applyMangaFilters();
+    applyBooksSearch();
+  }
+
+  searchInputs.forEach(inp => inp.addEventListener('input', handleSearchInput));
+
+  // =====================================================================
+  // Paste-to-set-cover — while the add/edit modal is open, pasting
+  // (Ctrl/Cmd+V) either a copied image or a copied image URL sets it as
+  // the cover, same as using "＋ 新增封面". Skipped while a text field is
+  // focused so normal text pasting still works everywhere else.
+  // =====================================================================
+  function handleCoverPaste(e, banner, btnLabel, fitBtn, setUrl, setPosX, setPosY, setFit){
+    const items = e.clipboardData && e.clipboardData.items;
+    if (items) {
+      for (const item of items) {
+        if (item.type && item.type.startsWith('image/')) {
+          e.preventDefault();
+          const file = item.getAsFile();
+          const reader = new FileReader();
+          reader.onload = () => {
+            setUrl(reader.result);
+            setPosX(50); setPosY(50);
+            setFit('cover');
+            fitBtn.textContent = '⛶ 顯示全圖';
+            banner.style.backgroundImage = `url('${reader.result}')`;
+            banner.style.backgroundPosition = '50% 50%';
+            banner.style.backgroundSize = 'cover';
+            banner.classList.add('has-image');
+            btnLabel.textContent = '✎ 更換封面';
+          };
+          reader.readAsDataURL(file);
+          return;
+        }
+      }
+    }
+    const text = ((e.clipboardData && e.clipboardData.getData('text')) || '').trim();
+    if (/^https?:\/\//i.test(text)) {
+      e.preventDefault();
+      setUrl(text);
+      setPosX(50); setPosY(50);
+      setFit('cover');
+      fitBtn.textContent = '⛶ 顯示全圖';
+      banner.style.backgroundImage = `url('${text}')`;
+      banner.style.backgroundPosition = '50% 50%';
+      banner.style.backgroundSize = 'cover';
+      banner.classList.add('has-image');
+      btnLabel.textContent = '✎ 更換封面';
+    }
+  }
+
+  document.addEventListener('paste', (e) => {
+    if (e.target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
+    if (backdrop.classList.contains('open')) {
+      handleCoverPaste(e, coverBanner, coverBtnLabel, coverFitBtn,
+        (v) => { selectedCoverUrl = v; }, (v) => { selectedCoverPosX = v; }, (v) => { selectedCoverPosY = v; },
+        (v) => { selectedCoverFit = v; });
+    } else if (bookBackdrop.classList.contains('open')) {
+      handleCoverPaste(e, bookCoverBanner, bookCoverBtnLabel, bookCoverFitBtn,
+        (v) => { selectedBookCoverUrl = v; }, (v) => { selectedBookCoverPosX = v; }, (v) => { selectedBookCoverPosY = v; },
+        (v) => { selectedBookCoverFit = v; });
+    }
+  });
+</script>
+
+</body>
+</html>

@@ -1,8 +1,12 @@
 .site-header {
+  position: sticky;
+  z-index: 20;
+  top: 0;
   display: flex;
   align-items: center;
   gap: 24px;
   padding: 20px 34px 14px;
+  background: var(--paper);
 }
 
 .brand {
@@ -43,6 +47,10 @@
 
 .nav-link:nth-child(3) {
   transform: rotate(-0.8deg);
+}
+
+.nav-link:nth-child(4) {
+  transform: rotate(0.9deg);
 }
 
 .nav-link.active {

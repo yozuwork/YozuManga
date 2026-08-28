@@ -11,10 +11,13 @@ function Header() {
             追漫
           </button>
           <button className="nav-link" type="button">
-            收藏實體書
+            實體書
           </button>
           <button className="nav-link" type="button">
             分類
+          </button>
+          <button className="nav-link" type="button">
+            設置
           </button>
         </nav>
 
