@@ -1,6 +1,10 @@
 import './Header.css'
 
-function Header() {
+function Header({ searchQuery, onSearchChange }) {
+  function handleSearchChange(event) {
+    onSearchChange(event.target.value)
+  }
+
   return (
     <>
       <header className="site-header">
@@ -27,6 +31,8 @@ function Header() {
             type="search"
             aria-label="搜尋"
             placeholder="找漫畫、找書、找作者…"
+            value={searchQuery}
+            onChange={handleSearchChange}
           />
           <div className="avatar" aria-label="使用者：米">
             米
@@ -47,7 +53,13 @@ function Header() {
           <circle cx="11" cy="11" r="7" />
           <path d="M21 21l-4.3-4.3" />
         </svg>
-        <input type="search" placeholder="找漫畫、找書、找作者…" />
+        <input
+          type="search"
+          aria-label="搜尋"
+          placeholder="找漫畫、找書、找作者…"
+          value={searchQuery}
+          onChange={handleSearchChange}
+        />
       </label>
     </>
   )

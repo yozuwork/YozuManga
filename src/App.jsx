@@ -1,11 +1,17 @@
+import { useState } from 'react'
 import Header from './components/layout/Header.jsx'
 import MangaPage from './pages/MangaPage.jsx'
 
 function App() {
+  const [searchQuery, setSearchQuery] = useState('')
+
   return (
     <>
-      <Header />
-      <MangaPage />
+      <Header
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+      />
+      <MangaPage searchQuery={searchQuery} />
     </>
   )
 }
