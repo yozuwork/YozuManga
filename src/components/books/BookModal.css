@@ -1,0 +1,19 @@
+.book-form {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.edition-group {
+  margin-bottom: 14px;
+  padding: 12px 12px 2px;
+  border: 2px dashed rgba(24, 24, 24, 0.2);
+  border-radius: 10px;
+}
+
+.edition-label {
+  margin-bottom: 8px;
+  color: var(--gray);
+  font-size: 12.5px;
+  font-weight: 800;
+}

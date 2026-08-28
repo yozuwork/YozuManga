@@ -1,0 +1,50 @@
+.category-modal-inner {
+  display: flex;
+  min-height: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 60px 26px 22px;
+  flex-direction: column;
+}
+
+.category-title-input {
+  font-size: 26px;
+}
+
+.category-type-field {
+  margin-top: 20px;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.checkbox-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.type-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  background: var(--paper);
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.type-check input {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  accent-color: var(--ink);
+}

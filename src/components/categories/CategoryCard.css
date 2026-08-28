@@ -1,0 +1,40 @@
+.category-card {
+  cursor: pointer;
+}
+
+.cat-card-remove {
+  position: absolute;
+  z-index: 4;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  width: 24px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--card);
+  cursor: pointer;
+  font-size: 11px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.category-card:hover .cat-card-remove,
+.cat-card-remove:focus-visible {
+  opacity: 1;
+}
+
+.cat-card-remove:hover {
+  background: #e8a8a8;
+}
+
+@media (max-width: 640px) {
+  .cat-card-remove {
+    width: 20px;
+    height: 20px;
+    font-size: 9px;
+    opacity: 1;
+  }
+}

@@ -1,7 +1,7 @@
 import './MangaCard.css'
 
-function MangaCard({ manga, onEdit }) {
-  const tagClassName = ['tag', manga.statusClass].filter(Boolean).join(' ')
+function MangaCard({ manga, statusClass, onEdit }) {
+  const tagClassName = ['tag', statusClass].filter(Boolean).join(' ')
   const totalLabel = manga.total
     ? manga.status === '已完結' && manga.current >= manga.total
       ? '已補完'

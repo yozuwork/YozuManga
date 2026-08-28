@@ -1,6 +1,13 @@
 import './Header.css'
 
-function Header({ searchQuery, onSearchChange }) {
+const navItems = [
+  { id: 'manga', label: '追漫' },
+  { id: 'books', label: '實體書' },
+  { id: 'cats', label: '分類' },
+  { id: 'settings', label: '設置' },
+]
+
+function Header({ activeView, onViewChange, searchQuery, onSearchChange }) {
   function handleSearchChange(event) {
     onSearchChange(event.target.value)
   }
@@ -11,18 +18,16 @@ function Header({ searchQuery, onSearchChange }) {
         <div className="brand">柚子的書庫</div>
 
         <nav className="site-nav" aria-label="主要選單">
-          <button className="nav-link active" type="button">
-            追漫
-          </button>
-          <button className="nav-link" type="button">
-            實體書
-          </button>
-          <button className="nav-link" type="button">
-            分類
-          </button>
-          <button className="nav-link" type="button">
-            設置
-          </button>
+          {navItems.map((item) => (
+            <button
+              className={activeView === item.id ? 'nav-link active' : 'nav-link'}
+              type="button"
+              key={item.id}
+              onClick={() => onViewChange(item.id)}
+            >
+              {item.label}
+            </button>
+          ))}
         </nav>
 
         <div className="head-right">

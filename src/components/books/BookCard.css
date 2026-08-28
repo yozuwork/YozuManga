@@ -1,0 +1,29 @@
+.edition-progress.spaced {
+  margin-top: 8px;
+}
+
+.track i.mint {
+  background: var(--mint);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.chip {
+  padding: 2px 9px;
+  border: 1.5px solid var(--ink);
+  border-radius: 9px 7px 10px 6px;
+  background: var(--paper);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .chips {
+    display: none;
+  }
+}
