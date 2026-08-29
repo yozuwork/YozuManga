@@ -2,6 +2,12 @@
   cursor: pointer;
 }
 
+.category-type-icons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .cat-card-remove {
   position: absolute;
   z-index: 4;
@@ -30,11 +36,19 @@
   background: #e8a8a8;
 }
 
+.cat-card-remove.with-selection {
+  top: 44px;
+}
+
 @media (max-width: 640px) {
   .cat-card-remove {
     width: 20px;
     height: 20px;
     font-size: 9px;
     opacity: 1;
+  }
+
+  .cat-card-remove.with-selection {
+    top: 35px;
   }
 }

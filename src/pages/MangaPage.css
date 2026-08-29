@@ -1,8 +1,16 @@
 .filters {
   display: flex;
+  align-items: center;
   flex-wrap: wrap;
   gap: 10px;
   padding: 1rem 34px 20px;
+}
+
+.filter-options {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .filters .filter-pill {
@@ -81,17 +89,61 @@
 
 @media (max-width: 640px) {
   .filters {
-    padding: 1rem 16px 16px;
+    align-items: stretch;
+    gap: 14px;
+    padding: 8px 16px 14px;
+  }
+
+  .filter-options {
+    width: 100%;
+    flex-wrap: nowrap;
+    gap: 3px;
+    padding-bottom: 11px;
+    overflow-x: auto;
+    border-bottom: 1px solid rgba(24, 24, 24, 0.12);
+    scrollbar-width: none;
+  }
+
+  .filter-options::-webkit-scrollbar {
+    display: none;
   }
 
   .filters .filter-pill {
-    padding: 6px 14px;
-    font-size: 12px;
+    position: relative;
+    flex: 0 0 auto;
+    padding: 7px 9px 10px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--ink);
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .filters .filter-pill.on {
+    background: transparent;
+    color: var(--ink);
+    font-weight: 900;
+  }
+
+  .filters .filter-pill.on::after {
+    position: absolute;
+    right: 8px;
+    bottom: 0;
+    left: 8px;
+    height: 4px;
+    border-radius: 4px;
+    background: var(--marker);
+    content: '';
+  }
+
+  .filters .filter-pill.add-pill {
+    display: none;
   }
 
   .board {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
     padding: 0 12px 24px;
   }
 

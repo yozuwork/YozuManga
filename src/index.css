@@ -49,3 +49,21 @@ textarea,
 select {
   font: inherit;
 }
+
+.button-with-icon,
+.icon-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.button-with-icon {
+  justify-content: center;
+}
+
+.button-with-icon svg,
+.icon-label svg,
+.fab-add svg,
+.modal-close svg {
+  flex-shrink: 0;
+}

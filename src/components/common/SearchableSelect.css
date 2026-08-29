@@ -1,0 +1,105 @@
+.searchable-select {
+  position: relative;
+}
+
+.form-field .searchable-select input {
+  padding-right: 38px;
+  padding-left: 34px;
+}
+
+.searchable-select-search-icon,
+.searchable-select-chevron {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  color: var(--gray);
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.searchable-select-search-icon {
+  left: 11px;
+}
+
+.searchable-select-chevron {
+  right: 12px;
+}
+
+.searchable-select-clear {
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  right: 7px;
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--gray);
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.searchable-select-menu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 5px);
+  right: 0;
+  left: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  background: var(--card);
+  box-shadow: 4px 5px 0 rgba(24, 24, 24, 0.9);
+}
+
+.searchable-select-menu button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 11px;
+  border: 0;
+  border-bottom: 1px dashed rgba(24, 24, 24, 0.2);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+}
+
+.searchable-select-menu button:last-child {
+  border-bottom: 0;
+}
+
+.searchable-select-menu button.active {
+  background: var(--marker-soft);
+}
+
+.searchable-select-menu button span {
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.searchable-select-menu button small {
+  flex-shrink: 0;
+  color: var(--gray);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.searchable-select-empty {
+  padding: 14px 11px;
+  color: var(--gray);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}

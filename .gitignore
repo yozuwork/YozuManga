@@ -1,8 +1,12 @@
 node_modules/
 dist/
 .env
+.env.local
 .env.*
 !.env.example
 *.local
 *.log
 .DS_Store
+
+# Notion 原始匯出資料只保留在本機。
+/ExportBlock-95d87cd6-cd12-427d-833c-f203d4547d14-Part-1/

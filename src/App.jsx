@@ -1,36 +1,27 @@
-import { useEffect, useRef, useState } from 'react'
-import Toast from './components/common/Toast.jsx'
+import { useState } from 'react'
 import BottomTabBar from './components/layout/BottomTabBar.jsx'
 import Footer from './components/layout/Footer.jsx'
 import Header from './components/layout/Header.jsx'
-import {
-  initialBookList,
-  initialCategories,
-  initialMangaList,
-  initialReadingStatuses,
-} from './data/initialData.js'
+import { useDialog } from './components/common/DialogProvider.jsx'
+import useLibraryData from './hooks/useLibraryData.js'
 import BooksPage from './pages/BooksPage.jsx'
 import CategoriesPage from './pages/CategoriesPage.jsx'
 import MangaPage from './pages/MangaPage.jsx'
 import SettingsPage from './pages/SettingsPage.jsx'
+import { logout } from './services/authService.js'
+import { seedInitialData } from './services/seedService.js'
+import './App.css'
 
-function App() {
+function App({ user }) {
   const [activeView, setActiveView] = useState('manga')
   const [searchQuery, setSearchQuery] = useState('')
-  const [categories, setCategories] = useState(initialCategories)
-  const [readingStatuses, setReadingStatuses] = useState(initialReadingStatuses)
-  const [mangaList, setMangaList] = useState(initialMangaList)
-  const [bookList, setBookList] = useState(initialBookList)
-  const [toastMessage, setToastMessage] = useState('')
-  const toastTimerRef = useRef(null)
-
-  useEffect(() => () => clearTimeout(toastTimerRef.current), [])
-
-  function showToast(message) {
-    setToastMessage(message)
-    clearTimeout(toastTimerRef.current)
-    toastTimerRef.current = setTimeout(() => setToastMessage(''), 2200)
-  }
+  const [isSeeding, setIsSeeding] = useState(false)
+  const library = useLibraryData()
+  const { showMessage } = useDialog()
+  const relatedWorks = [
+    ...library.mangaList.map((manga) => ({ id: manga.id, type: 'manga', title: manga.title })),
+    ...library.bookList.map((book) => ({ id: book.id, type: 'book', title: book.title })),
+  ]
 
   function handleViewChange(view) {
     setActiveView(view)
@@ -42,66 +33,111 @@ function App() {
     setSearchQuery(category.name)
   }
 
-  function removeReadingStatus(name) {
-    if (readingStatuses.length <= 1) return
-
-    const remainingStatuses = readingStatuses.filter((status) => status.name !== name)
-    const mangaFallback =
-      remainingStatuses.find((status) => status.types.includes('manga')) ?? remainingStatuses[0]
-    const bookFallback =
-      remainingStatuses.find((status) => status.types.includes('book')) ?? remainingStatuses[0]
-
-    setReadingStatuses(remainingStatuses)
-    setMangaList((currentList) =>
-      currentList.map((manga) =>
-        manga.status === name ? { ...manga, status: mangaFallback.name } : manga,
-      ),
+  function handleRelatedNavigation(relatedWork) {
+    const target = relatedWorks.find(
+      (work) => work.id === relatedWork.id && work.type === relatedWork.type,
     )
-    setBookList((currentList) =>
-      currentList.map((book) =>
-        book.status === name ? { ...book, status: bookFallback.name } : book,
-      ),
+    if (!target) {
+      showMessage('關聯作品可能已被刪除。', { title: '找不到作品', variant: 'warning' })
+      return
+    }
+
+    setActiveView(target.type === 'book' ? 'books' : 'manga')
+    setSearchQuery(target.title)
+    window.scrollTo({ top: 0 })
+  }
+
+  async function handleSeed() {
+    setIsSeeding(true)
+    try {
+      await seedInitialData()
+      await library.loadData()
+      showMessage('初始資料已寫入 Firestore。', {
+        title: '初始化完成',
+        variant: 'success',
+      })
+    } catch (error) {
+      showMessage(error.message || '初始化失敗。', {
+        title: '初始化失敗',
+        variant: 'error',
+      })
+    } finally {
+      setIsSeeding(false)
+    }
+  }
+
+  if (library.loading) {
+    return <main className="library-state" aria-live="polite">正在載入書庫…</main>
+  }
+
+  if (library.error) {
+    return (
+      <main className="library-state error-state">
+        <h1>書庫載入失敗</h1>
+        <p>{library.error.message}</p>
+        <button type="button" onClick={() => library.loadData().catch(() => {})}>重新載入</button>
+      </main>
     )
   }
+
+  const isLibraryEmpty =
+    library.mangaList.length === 0 &&
+    library.bookList.length === 0 &&
+    library.categories.length === 0 &&
+    library.readingStatuses.length === 0
 
   let page
   if (activeView === 'books') {
     page = (
       <BooksPage
         searchQuery={searchQuery}
-        bookList={bookList}
-        setBookList={setBookList}
-        categories={categories}
-        readingStatuses={readingStatuses}
-        showToast={showToast}
+        bookList={library.bookList}
+        categories={library.categories}
+        readingStatuses={library.readingStatuses}
+        onAddBook={library.createBook}
+        onUpdateBook={library.editBook}
+        onDeleteBook={library.removeBook}
+        onDeleteBooks={library.removeBooks}
+        onReorderBooks={library.reorderBookList}
+        onImportNotionBooks={library.importNotionBooks}
+        relatedWorks={relatedWorks}
+        onNavigateRelated={handleRelatedNavigation}
       />
     )
   } else if (activeView === 'cats') {
     page = (
       <CategoriesPage
-        categories={categories}
-        setCategories={setCategories}
+        categories={library.categories}
+        onAddCategory={library.createCategory}
+        onDeleteCategory={library.removeCategory}
+        onDeleteCategories={library.removeCategories}
+        onReorderCategories={library.reorderCategoryList}
         onNavigateCategory={handleCategoryNavigation}
-        showToast={showToast}
       />
     )
   } else if (activeView === 'settings') {
     page = (
       <SettingsPage
-        readingStatuses={readingStatuses}
-        setReadingStatuses={setReadingStatuses}
-        onRemoveStatus={removeReadingStatus}
+        readingStatuses={library.readingStatuses}
+        onAddStatus={library.createStatus}
+        onUpdateStatus={library.editStatus}
+        onRemoveStatus={library.removeStatus}
       />
     )
   } else {
     page = (
       <MangaPage
         searchQuery={searchQuery}
-        mangaList={mangaList}
-        setMangaList={setMangaList}
-        categories={categories}
-        readingStatuses={readingStatuses}
-        showToast={showToast}
+        mangaList={library.mangaList}
+        categories={library.categories}
+        readingStatuses={library.readingStatuses}
+        onAddManga={library.createManga}
+        onUpdateManga={library.editManga}
+        onDeleteManga={library.removeManga}
+        onDeleteMangas={library.removeMangas}
+        onReorderMangas={library.reorderMangaList}
+        relatedWorks={relatedWorks}
+        onNavigateRelated={handleRelatedNavigation}
       />
     )
   }
@@ -113,11 +149,20 @@ function App() {
         onViewChange={handleViewChange}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
+        user={user}
+        onLogout={logout}
       />
+      {import.meta.env.DEV && isLibraryEmpty && (
+        <aside className="seed-banner">
+          <span>Firestore 目前是空的，可將專案預設資料寫入一次。</span>
+          <button type="button" disabled={isSeeding} onClick={handleSeed}>
+            {isSeeding ? '初始化中…' : '初始化資料庫'}
+          </button>
+        </aside>
+      )}
       {page}
       <Footer />
       <BottomTabBar activeView={activeView} onViewChange={handleViewChange} />
-      <Toast message={toastMessage} />
     </>
   )
 }

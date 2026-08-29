@@ -1,4 +1,5 @@
 import './Header.css'
+import appIcon from '../../asstes/images/icon.png'
 
 const navItems = [
   { id: 'manga', label: '追漫' },
@@ -7,7 +8,7 @@ const navItems = [
   { id: 'settings', label: '設置' },
 ]
 
-function Header({ activeView, onViewChange, searchQuery, onSearchChange }) {
+function Header({ activeView, onViewChange, searchQuery, onSearchChange, user, onLogout }) {
   function handleSearchChange(event) {
     onSearchChange(event.target.value)
   }
@@ -39,9 +40,16 @@ function Header({ activeView, onViewChange, searchQuery, onSearchChange }) {
             value={searchQuery}
             onChange={handleSearchChange}
           />
-          <div className="avatar" aria-label="使用者：米">
-            米
-          </div>
+          <details className="user-menu">
+            <summary className="avatar" aria-label="開啟使用者選單">
+              <img src={appIcon} alt="" />
+            </summary>
+            <div className="user-menu-card">
+              <strong>{user.displayName || '管理者'}</strong>
+              <span>{user.email}</span>
+              <button type="button" onClick={onLogout}>登出</button>
+            </div>
+          </details>
         </div>
       </header>
 

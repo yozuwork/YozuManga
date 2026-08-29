@@ -1,11 +1,27 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import {
+  FiClipboard,
+  FiEdit3,
+  FiGlobe,
+  FiImage,
+  FiMaximize,
+  FiMove,
+  FiTag,
+  FiX,
+} from 'react-icons/fi'
 import '../manga/MangaModal.css'
 import './BookModal.css'
+import { useDialog } from '../common/DialogProvider.jsx'
+import SearchableSelect from '../common/SearchableSelect.jsx'
+import { compressCoverImage } from '../../utils/compressCoverImage.js'
+import { getCurrentLocalDateTime } from '../../utils/dateTime.js'
 
 const EMPTY_FORM = {
   title: '',
+  originalTitle: '',
   genre: '',
   author: '',
+  updateTime: '',
   publisher: '',
   shelf: '',
   jpCurrent: '',
@@ -17,16 +33,28 @@ const EMPTY_FORM = {
   coverPosX: 50,
   coverPosY: 50,
   coverFit: 'cover',
+  relatedWorkKey: '',
 }
 
 function getInitialForm(book, readingStatuses) {
   const fallbackStatus = readingStatuses[0]?.name ?? ''
-  if (!book) return { ...EMPTY_FORM, status: fallbackStatus }
+  if (!book) {
+    return {
+      ...EMPTY_FORM,
+      status: fallbackStatus,
+      updateTime: getCurrentLocalDateTime(),
+    }
+  }
 
   return {
     title: book.title,
+    originalTitle: book.originalTitle ?? '',
     genre: book.genre ?? '',
     author: book.author ?? '',
+    updateTime:
+      book.updateTimeMode !== 'auto' && book.updateTime
+        ? book.updateTime
+        : getCurrentLocalDateTime(),
     publisher: book.publisher ?? '',
     shelf: book.shelf ?? '',
     jpCurrent: book.jp?.current ?? '',
@@ -40,25 +68,66 @@ function getInitialForm(book, readingStatuses) {
     coverPosX: book.coverPosX ?? 50,
     coverPosY: book.coverPosY ?? 50,
     coverFit: book.coverFit ?? 'cover',
+    relatedWorkKey: book.relatedWork
+      ? `${book.relatedWork.type}:${book.relatedWork.id}`
+      : '',
   }
 }
 
-function BookModal({ isOpen, book, readingStatuses, genreOptions, onClose, onSave }) {
+function BookModal({
+  isOpen,
+  book,
+  readingStatuses,
+  genreOptions,
+  relatedWorks,
+  onClose,
+  onSave,
+}) {
   const [form, setForm] = useState(() => getInitialForm(null, readingStatuses))
   const [coverHeight, setCoverHeight] = useState(null)
   const [isDragging, setIsDragging] = useState(false)
   const [isResizing, setIsResizing] = useState(false)
   const [isCoverFocused, setIsCoverFocused] = useState(false)
+  const [isUpdateTimeEdited, setIsUpdateTimeEdited] = useState(false)
+  const [isProcessingCover, setIsProcessingCover] = useState(false)
+  const { showMessage } = useDialog()
   const titleInputRef = useRef(null)
   const fileInputRef = useRef(null)
   const coverBannerRef = useRef(null)
   const dragRef = useRef(null)
   const resizeRef = useRef(null)
+  const relationOptions = relatedWorks
+    .filter((work) => !(work.type === 'book' && work.id === book?.id))
+    .map((work) => ({
+      value: `${work.type}:${work.id}`,
+      label: work.title,
+      meta: work.type === 'book' ? '實體書' : '追漫',
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label, 'zh-Hant'))
+
+  const applyCoverFile = useCallback(async (file) => {
+    setIsProcessingCover(true)
+    try {
+      const coverUrl = await compressCoverImage(file)
+      setForm((currentForm) => ({
+        ...currentForm,
+        coverUrl,
+        coverPosX: 50,
+        coverPosY: 50,
+        coverFit: 'cover',
+      }))
+    } catch (error) {
+      showMessage(error.message || '圖片處理失敗。', { title: '圖片處理失敗', variant: 'error' })
+    } finally {
+      setIsProcessingCover(false)
+    }
+  }, [showMessage])
 
   useEffect(() => {
     if (!isOpen) return undefined
 
     setForm(getInitialForm(book, readingStatuses))
+    setIsUpdateTimeEdited(false)
     setCoverHeight(null)
     setIsDragging(false)
     setIsResizing(false)
@@ -72,6 +141,7 @@ function BookModal({ isOpen, book, readingStatuses, genreOptions, onClose, onSav
 
     function resetLocalState() {
       setForm(getInitialForm(null, readingStatuses))
+      setIsUpdateTimeEdited(false)
       setCoverHeight(null)
       setIsDragging(false)
       setIsResizing(false)
@@ -93,17 +163,7 @@ function BookModal({ isOpen, book, readingStatuses, genreOptions, onClose, onSav
       const imageFile = imageItem?.getAsFile()
       if (imageFile) {
         event.preventDefault()
-        const reader = new FileReader()
-        reader.onload = () => {
-          setForm((currentForm) => ({
-            ...currentForm,
-            coverUrl: String(reader.result),
-            coverPosX: 50,
-            coverPosY: 50,
-            coverFit: 'cover',
-          }))
-        }
-        reader.readAsDataURL(imageFile)
+        applyCoverFile(imageFile)
         return
       }
 
@@ -126,29 +186,19 @@ function BookModal({ isOpen, book, readingStatuses, genreOptions, onClose, onSav
       window.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('paste', handlePaste)
     }
-  }, [isOpen, onClose, readingStatuses])
+  }, [applyCoverFile, isOpen, onClose, readingStatuses])
 
   function handleFieldChange(event) {
     const { name, value } = event.target
+    if (name === 'updateTime') setIsUpdateTimeEdited(true)
     setForm((currentForm) => ({ ...currentForm, [name]: value }))
   }
 
-  function handleFileChange(event) {
+  async function handleFileChange(event) {
     const file = event.target.files?.[0]
     if (!file) return
-
-    const reader = new FileReader()
-    reader.onload = () => {
-      setForm((currentForm) => ({
-        ...currentForm,
-        coverUrl: String(reader.result),
-        coverPosX: 50,
-        coverPosY: 50,
-        coverFit: 'cover',
-      }))
-    }
-    reader.readAsDataURL(file)
     event.target.value = ''
+    await applyCoverFile(file)
   }
 
   function toggleCoverFit(event) {
@@ -214,6 +264,7 @@ function BookModal({ isOpen, book, readingStatuses, genreOptions, onClose, onSav
 
   function resetAndClose() {
     setForm(getInitialForm(null, readingStatuses))
+    setIsUpdateTimeEdited(false)
     setCoverHeight(null)
     setIsDragging(false)
     setIsResizing(false)
@@ -223,6 +274,7 @@ function BookModal({ isOpen, book, readingStatuses, genreOptions, onClose, onSav
 
   function handleSubmit(event) {
     event.preventDefault()
+    if (isProcessingCover) return
     const title = form.title.trim()
     if (!title) {
       titleInputRef.current?.focus()
@@ -231,10 +283,20 @@ function BookModal({ isOpen, book, readingStatuses, genreOptions, onClose, onSav
 
     const toNumber = (value) => Number.parseInt(value, 10) || 0
     const toOptionalNumber = (value) => (value === '' ? null : Number.parseInt(value, 10) || 0)
+    const keepManualUpdateTime = isUpdateTimeEdited
+      ? Boolean(form.updateTime)
+      : Boolean(book?.updateTime && book.updateTimeMode !== 'auto')
+    const relatedWork = relatedWorks.find(
+      (work) => `${work.type}:${work.id}` === form.relatedWorkKey,
+    )
+
     onSave({
       title,
+      originalTitle: form.originalTitle.trim(),
       genre: form.genre.trim(),
       author: form.author.trim(),
+      updateTime: keepManualUpdateTime ? form.updateTime : getCurrentLocalDateTime(),
+      updateTimeMode: keepManualUpdateTime ? 'manual' : 'auto',
       publisher: form.publisher.trim(),
       shelf: form.shelf.trim(),
       status: form.status,
@@ -246,6 +308,9 @@ function BookModal({ isOpen, book, readingStatuses, genreOptions, onClose, onSav
       coverFit: form.coverFit,
       legacySingleEdition: false,
       progressClass: '',
+      relatedWork: relatedWork
+        ? { id: relatedWork.id, type: relatedWork.type, title: relatedWork.title }
+        : null,
     })
   }
 
@@ -263,7 +328,9 @@ function BookModal({ isOpen, book, readingStatuses, genreOptions, onClose, onSav
       onMouseDown={(event) => event.target === event.currentTarget && resetAndClose()}
     >
       <section className="modal-card" role="dialog" aria-modal="true" aria-label={book ? '編輯書本' : '新增書本'}>
-        <button className="modal-close" type="button" aria-label="關閉" onClick={resetAndClose}>✕</button>
+        <button className="modal-close" type="button" aria-label="關閉" onClick={resetAndClose}>
+          <FiX aria-hidden="true" />
+        </button>
 
         <div
           ref={coverBannerRef}
@@ -285,28 +352,32 @@ function BookModal({ isOpen, book, readingStatuses, genreOptions, onClose, onSav
           onPointerLeave={endCoverDrag}
         >
           <button
-            className="cover-btn"
+            className="cover-btn button-with-icon"
             type="button"
+            disabled={isProcessingCover}
             onPointerDown={(event) => event.stopPropagation()}
             onClick={() => fileInputRef.current?.click()}
           >
-            {form.coverUrl ? '✎ 更換封面' : '＋ 新增封面'}
+            {form.coverUrl ? <FiEdit3 aria-hidden="true" /> : <FiImage aria-hidden="true" />}
+            {isProcessingCover ? '處理圖片中…' : form.coverUrl ? '更換封面' : '新增封面'}
           </button>
           {form.coverUrl && (
             <button
-              className="cover-fit-btn"
+              className="cover-fit-btn button-with-icon"
               type="button"
               title="切換填滿／顯示全圖"
               onPointerDown={(event) => event.stopPropagation()}
               onClick={toggleCoverFit}
             >
-              {form.coverFit === 'cover' ? '⛶ 顯示全圖' : '⛶ 填滿裁切'}
+              <FiMaximize aria-hidden="true" />
+              {form.coverFit === 'cover' ? '顯示全圖' : '填滿裁切'}
             </button>
           )}
-          <span className="cover-drag-hint">🖱️ 拖曳可調整顯示位置</span>
+          <span className="cover-drag-hint icon-label"><FiMove aria-hidden="true" /> 拖曳可調整顯示位置</span>
           {!form.coverUrl && (
             <span className="cover-paste-hint">
-              {isCoverFocused ? '✅ 已就緒，貼上圖片或圖片網址吧！' : '📋 也可直接貼上圖片或圖片網址（Ctrl/Cmd+V）'}
+              <FiClipboard aria-hidden="true" />
+              {isCoverFocused ? '已就緒，貼上圖片或圖片網址吧！' : '也可直接貼上圖片或圖片網址（Ctrl/Cmd+V）'}
             </span>
           )}
           <div
@@ -321,7 +392,10 @@ function BookModal({ isOpen, book, readingStatuses, genreOptions, onClose, onSav
         <input ref={fileInputRef} type="file" accept="image/*" hidden onChange={handleFileChange} />
 
         <div className="modal-inner" style={{ minHeight: coverHeight ? `calc(100% - ${coverHeight}px)` : undefined }}>
-          <div className="modal-eyebrow">{book ? '✎ 編輯書本' : '📌 新增書本'}</div>
+          <div className="modal-eyebrow icon-label">
+            {book ? <FiEdit3 aria-hidden="true" /> : <FiTag aria-hidden="true" />}
+            {book ? '編輯書本' : '新增書本'}
+          </div>
           <form className="book-form" onSubmit={handleSubmit}>
             <input
               ref={titleInputRef}
@@ -332,6 +406,29 @@ function BookModal({ isOpen, book, readingStatuses, genreOptions, onClose, onSav
               required
               onChange={handleFieldChange}
             />
+
+            <div className="form-row">
+              <div className="form-field">
+                <label htmlFor="book-original-title">原作名稱</label>
+                <input
+                  id="book-original-title"
+                  name="originalTitle"
+                  value={form.originalTitle}
+                  placeholder="例如：原文或日文名稱"
+                  onChange={handleFieldChange}
+                />
+              </div>
+              <div className="form-field">
+                <label htmlFor="book-update-time">更新時間</label>
+                <input
+                  id="book-update-time"
+                  name="updateTime"
+                  type="datetime-local"
+                  value={form.updateTime}
+                  onChange={handleFieldChange}
+                />
+              </div>
+            </div>
 
             <div className="form-row">
               <div className="form-field">
@@ -359,8 +456,8 @@ function BookModal({ isOpen, book, readingStatuses, genreOptions, onClose, onSav
               </div>
             </div>
 
-            <EditionFields label="🇯🇵 日版" prefix="jp" form={form} onChange={handleFieldChange} />
-            <EditionFields label="🇹🇼 台版" prefix="tw" form={form} onChange={handleFieldChange} />
+            <EditionFields label="JP 日版" prefix="jp" form={form} onChange={handleFieldChange} />
+            <EditionFields label="TW 台版" prefix="tw" form={form} onChange={handleFieldChange} />
 
             <div className="form-field">
               <label htmlFor="book-status">閱讀狀態</label>
@@ -369,9 +466,24 @@ function BookModal({ isOpen, book, readingStatuses, genreOptions, onClose, onSav
               </select>
             </div>
 
+            <div className="form-field">
+              <label htmlFor="book-related-work">關聯作品</label>
+              <SearchableSelect
+                id="book-related-work"
+                value={form.relatedWorkKey}
+                options={relationOptions}
+                placeholder="輸入書名搜尋追漫或實體書…"
+                onChange={(relatedWorkKey) =>
+                  setForm((currentForm) => ({ ...currentForm, relatedWorkKey }))
+                }
+              />
+            </div>
+
             <div className="modal-actions">
               <button className="btn-cancel" type="button" onClick={resetAndClose}>取消</button>
-              <button className="btn-submit" type="submit">{book ? '儲存變更' : '貼上書架'}</button>
+              <button className="btn-submit" type="submit" disabled={isProcessingCover}>
+                {isProcessingCover ? '處理圖片中…' : book ? '儲存變更' : '貼上書架'}
+              </button>
             </div>
           </form>
         </div>
@@ -385,7 +497,7 @@ function EditionFields({ label, prefix, form, onChange }) {
   const totalName = `${prefix}Total`
   return (
     <div className="edition-group">
-      <div className="edition-label">{label}</div>
+      <div className="edition-label icon-label"><FiGlobe aria-hidden="true" /> {label}</div>
       <div className="form-row">
         <div className="form-field">
           <label htmlFor={`book-${currentName}`}>已收冊數</label>

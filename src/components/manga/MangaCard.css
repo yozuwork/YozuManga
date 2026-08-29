@@ -1,5 +1,7 @@
 .sticky {
   position: relative;
+  display: flex;
+  flex-direction: column;
   padding: 0;
   border: 2.5px solid var(--ink);
   border-radius: 6px 6px 4px 4px;
@@ -7,6 +9,72 @@
   box-shadow: 4px 6px 0 rgba(24, 24, 24, 0.9);
   cursor: pointer;
   transition: transform 0.12s;
+}
+
+.card-remove {
+  position: absolute;
+  z-index: 6;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  width: 30px;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--card);
+  color: var(--ink);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s, transform 0.15s;
+}
+
+.sticky:hover .card-remove,
+.card-remove:focus-visible {
+  opacity: 1;
+}
+
+.card-remove:hover {
+  background: #e8a8a8;
+  transform: scale(1.06);
+}
+
+.card-remove.with-selection {
+  top: 44px;
+}
+
+.card-cover-position {
+  position: absolute;
+  z-index: 6;
+  top: 8px;
+  left: 8px;
+  display: flex;
+  width: 30px;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--card);
+  color: var(--ink);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s, transform 0.15s;
+}
+
+.sticky:hover .card-cover-position,
+.card-cover-position:focus-visible,
+.card-cover-position.active {
+  opacity: 1;
+}
+
+.card-cover-position:hover,
+.card-cover-position.active {
+  background: var(--marker);
+  transform: scale(1.06);
 }
 
 .sticky:focus-visible {
@@ -107,7 +175,14 @@
 }
 
 .info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   padding: 14px 16px 16px;
+}
+
+.card-progress-block {
+  margin-top: auto;
 }
 
 .info h3 {
@@ -133,6 +208,45 @@
   font-weight: 600;
 }
 
+.cover.repositioning {
+  cursor: move;
+  touch-action: none;
+  box-shadow: inset 0 0 0 4px var(--marker);
+}
+
+.cover .cover-position-hint {
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  left: 50%;
+  padding: 5px 8px;
+  border-radius: 7px;
+  background: rgba(24, 24, 24, 0.78);
+  color: var(--paper);
+  font-size: 9px;
+  line-height: 1.2;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+}
+
+.original-title-line,
+.update-time-line {
+  max-width: 100%;
+  margin: -1px 0 8px;
+  overflow: hidden;
+  color: var(--gray);
+  font-size: 10.5px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.update-time-line {
+  margin: -3px 0 9px;
+  font-size: 10px;
+}
+
 .read-link-btn {
   display: flex;
   align-items: center;
@@ -152,6 +266,39 @@
 
 .read-link-btn:hover {
   background: #e0b93a;
+}
+
+.related-work-btn {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 9px;
+  padding: 6px 9px;
+  overflow: hidden;
+  border: 1.5px dashed var(--ink);
+  border-radius: 8px 6px 9px 7px;
+  background: var(--marker-soft);
+  color: var(--ink);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 10.5px;
+  font-weight: 800;
+  text-align: left;
+}
+
+.related-work-btn:hover {
+  background: var(--marker);
+}
+
+.related-work-btn svg {
+  flex-shrink: 0;
+}
+
+.related-work-btn span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .prow {
@@ -178,8 +325,30 @@
 }
 
 @media (max-width: 640px) {
+  .card-remove {
+    top: 5px;
+    right: 5px;
+    width: 24px;
+    height: 24px;
+    font-size: 11px;
+    opacity: 1;
+  }
+
+  .card-remove.with-selection {
+    top: 35px;
+  }
+
+  .card-cover-position {
+    top: 5px;
+    left: 5px;
+    width: 24px;
+    height: 24px;
+    font-size: 11px;
+    opacity: 1;
+  }
+
   .sticky {
-    display: block;
+    display: flex;
     box-shadow: 2px 3px 0 rgba(24, 24, 24, 0.9);
   }
 
@@ -200,7 +369,7 @@
 
   .cover {
     width: auto;
-    height: 78px;
+    height: clamp(112px, 34vw, 150px);
     flex-shrink: 0;
     border-right: 0;
     border-bottom: 2px solid var(--ink);
@@ -256,7 +425,15 @@
   }
 
   .author-line,
+  .original-title-line,
+  .update-time-line,
   .read-link-btn {
     display: none;
+  }
+
+  .related-work-btn {
+    margin-bottom: 5px;
+    padding: 4px 5px;
+    font-size: 7.5px;
   }
 }

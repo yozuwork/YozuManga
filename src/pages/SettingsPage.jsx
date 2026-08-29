@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { FiBookOpen, FiPlus, FiX } from 'react-icons/fi'
+import { useDialog } from '../components/common/DialogProvider.jsx'
 import { statusColorHex, statusColorPalette } from '../data/initialData.js'
 import './SettingsPage.css'
 
@@ -11,63 +13,92 @@ function getTypes(value) {
   return value === 'both' ? ['manga', 'book'] : [value]
 }
 
-function SettingsPage({ readingStatuses, setReadingStatuses, onRemoveStatus }) {
+function SettingsPage({
+  readingStatuses,
+  onAddStatus,
+  onUpdateStatus,
+  onRemoveStatus,
+}) {
   const [newStatusName, setNewStatusName] = useState('')
   const [newStatusType, setNewStatusType] = useState('both')
+  const { confirm, showMessage } = useDialog()
 
-  function cycleStatusColor(name) {
-    setReadingStatuses((currentStatuses) =>
-      currentStatuses.map((status) => {
-        if (status.name !== name) return status
-        const nextIndex = (statusColorPalette.indexOf(status.color) + 1) % statusColorPalette.length
-        return { ...status, color: statusColorPalette[nextIndex] }
-      }),
-    )
+  async function cycleStatusColor(status) {
+    const nextIndex = (statusColorPalette.indexOf(status.color) + 1) % statusColorPalette.length
+    try {
+      await onUpdateStatus(status.id, { color: statusColorPalette[nextIndex] })
+    } catch (error) {
+      showMessage(error.message, { title: '更新失敗', variant: 'error' })
+    }
   }
 
-  function updateStatusType(name, value) {
-    setReadingStatuses((currentStatuses) =>
-      currentStatuses.map((status) =>
-        status.name === name ? { ...status, types: getTypes(value) } : status,
-      ),
-    )
+  async function updateStatusType(status, value) {
+    try {
+      await onUpdateStatus(status.id, { types: getTypes(value) })
+    } catch (error) {
+      showMessage(error.message, { title: '更新失敗', variant: 'error' })
+    }
   }
 
-  function addStatus() {
+  async function addStatus() {
     const name = newStatusName.trim()
     if (!name || readingStatuses.some((status) => status.name === name)) {
       setNewStatusName('')
       return
     }
 
-    setReadingStatuses((currentStatuses) => [
-      ...currentStatuses,
-      {
+    try {
+      await onAddStatus({
         name,
-        color: statusColorPalette[currentStatuses.length % statusColorPalette.length],
+        color: statusColorPalette[readingStatuses.length % statusColorPalette.length],
         types: getTypes(newStatusType),
-      },
-    ])
-    setNewStatusName('')
+      })
+      setNewStatusName('')
+      showMessage(`閱讀狀態「${name}」已新增。`, { title: '新增成功', variant: 'success' })
+    } catch (error) {
+      showMessage(error.message, { title: '新增失敗', variant: 'error' })
+    }
+  }
+
+  async function removeStatus(status) {
+    const didConfirm = await confirm(`確定要移除閱讀狀態「${status.name}」嗎？`, {
+      title: '移除閱讀狀態',
+      variant: 'danger',
+      confirmLabel: '移除',
+    })
+    if (!didConfirm) return
+
+    try {
+      const didRemove = await onRemoveStatus(status.id)
+      showMessage(
+        didRemove ? `閱讀狀態「${status.name}」已移除。` : '至少需要保留一個閱讀狀態。',
+        {
+          title: didRemove ? '移除成功' : '無法移除',
+          variant: didRemove ? 'success' : 'warning',
+        },
+      )
+    } catch (error) {
+      showMessage(error.message, { title: '移除失敗', variant: 'error' })
+    }
   }
 
   return (
     <main className="settings-page">
       <div className="cat-wrap">
         <section className="cat-section">
-          <h2>📖 閱讀狀態</h2>
+          <h2><FiBookOpen aria-hidden="true" /> 閱讀狀態</h2>
           <div className="hint">管理追漫、實體書可選擇的閱讀狀態，可分別決定套用範圍</div>
 
           <div className="cat-list">
             {readingStatuses.map((status) => (
-              <div className={`cat-pill ${status.color}`} key={status.name}>
+              <div className={`cat-pill ${status.color}`} key={status.id}>
                 <button
                   className="color-swatch"
                   type="button"
                   title="點擊切換顏色"
                   aria-label={`切換${status.name}顏色`}
                   style={{ background: statusColorHex[status.color] }}
-                  onClick={() => cycleStatusColor(status.name)}
+                  onClick={() => cycleStatusColor(status)}
                 />
                 <span>{status.name}</span>
                 <select
@@ -75,7 +106,7 @@ function SettingsPage({ readingStatuses, setReadingStatuses, onRemoveStatus }) {
                   title="套用範圍"
                   aria-label={`${status.name}套用範圍`}
                   value={getTypeValue(status.types)}
-                  onChange={(event) => updateStatusType(status.name, event.target.value)}
+                  onChange={(event) => updateStatusType(status, event.target.value)}
                 >
                   <option value="both">追漫＋實體書</option>
                   <option value="manga">僅追漫</option>
@@ -86,9 +117,9 @@ function SettingsPage({ readingStatuses, setReadingStatuses, onRemoveStatus }) {
                   type="button"
                   title="移除"
                   aria-label={`移除${status.name}`}
-                  onClick={() => onRemoveStatus(status.name)}
+                  onClick={() => removeStatus(status)}
                 >
-                  ✕
+                  <FiX aria-hidden="true" />
                 </button>
               </div>
             ))}
@@ -106,9 +137,12 @@ function SettingsPage({ readingStatuses, setReadingStatuses, onRemoveStatus }) {
               <option value="manga">僅追漫</option>
               <option value="book">僅實體書</option>
             </select>
-            <button type="button" onClick={addStatus}>＋ 新增</button>
+            <button className="button-with-icon" type="button" onClick={addStatus}>
+              <FiPlus aria-hidden="true" /> 新增
+            </button>
           </div>
         </section>
+
       </div>
     </main>
   )

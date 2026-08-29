@@ -1,10 +1,25 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import {
+  FiClipboard,
+  FiEdit3,
+  FiImage,
+  FiMaximize,
+  FiMove,
+  FiTag,
+  FiX,
+} from 'react-icons/fi'
 import './MangaModal.css'
+import { useDialog } from '../common/DialogProvider.jsx'
+import SearchableSelect from '../common/SearchableSelect.jsx'
+import { compressCoverImage } from '../../utils/compressCoverImage.js'
+import { getCurrentLocalDateTime } from '../../utils/dateTime.js'
 
 const EMPTY_FORM = {
   title: '',
+  originalTitle: '',
   genre: '',
   author: '',
+  updateTime: '',
   current: '',
   total: '',
   link: '',
@@ -13,6 +28,7 @@ const EMPTY_FORM = {
   coverPosX: 50,
   coverPosY: 50,
   coverFit: 'cover',
+  relatedWorkKey: '',
 }
 
 function getInitialForm(manga, readingStatuses) {
@@ -20,13 +36,19 @@ function getInitialForm(manga, readingStatuses) {
     return {
       ...EMPTY_FORM,
       status: readingStatuses[0]?.name ?? '',
+      updateTime: getCurrentLocalDateTime(),
     }
   }
 
   return {
     title: manga.title,
+    originalTitle: manga.originalTitle ?? '',
     genre: manga.genre ?? '',
     author: manga.author ?? '',
+    updateTime:
+      manga.updateTimeMode !== 'auto' && manga.updateTime
+        ? manga.updateTime
+        : getCurrentLocalDateTime(),
     current: manga.current ?? '',
     total: manga.total ?? '',
     link: manga.link ?? '',
@@ -37,6 +59,9 @@ function getInitialForm(manga, readingStatuses) {
     coverPosX: manga.coverPosX ?? 50,
     coverPosY: manga.coverPosY ?? 50,
     coverFit: manga.coverFit ?? 'cover',
+    relatedWorkKey: manga.relatedWork
+      ? `${manga.relatedWork.type}:${manga.relatedWork.id}`
+      : '',
   }
 }
 
@@ -47,22 +72,53 @@ function MangaModal({
   genreOptions,
   onClose,
   onSave,
+  relatedWorks,
 }) {
   const [form, setForm] = useState(() => getInitialForm(null, readingStatuses))
   const [coverHeight, setCoverHeight] = useState(null)
   const [isDragging, setIsDragging] = useState(false)
   const [isResizing, setIsResizing] = useState(false)
   const [isCoverFocused, setIsCoverFocused] = useState(false)
+  const [isUpdateTimeEdited, setIsUpdateTimeEdited] = useState(false)
+  const [isProcessingCover, setIsProcessingCover] = useState(false)
+  const { showMessage } = useDialog()
   const titleInputRef = useRef(null)
   const fileInputRef = useRef(null)
   const coverBannerRef = useRef(null)
   const dragRef = useRef(null)
   const resizeRef = useRef(null)
+  const relationOptions = relatedWorks
+    .filter((work) => !(work.type === 'manga' && work.id === manga?.id))
+    .map((work) => ({
+      value: `${work.type}:${work.id}`,
+      label: work.title,
+      meta: work.type === 'book' ? '實體書' : '追漫',
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label, 'zh-Hant'))
+
+  const applyCoverFile = useCallback(async (file) => {
+    setIsProcessingCover(true)
+    try {
+      const coverUrl = await compressCoverImage(file)
+      setForm((currentForm) => ({
+        ...currentForm,
+        coverUrl,
+        coverPosX: 50,
+        coverPosY: 50,
+        coverFit: 'cover',
+      }))
+    } catch (error) {
+      showMessage(error.message || '圖片處理失敗。', { title: '圖片處理失敗', variant: 'error' })
+    } finally {
+      setIsProcessingCover(false)
+    }
+  }, [showMessage])
 
   useEffect(() => {
     if (!isOpen) return undefined
 
     setForm(getInitialForm(manga, readingStatuses))
+    setIsUpdateTimeEdited(false)
     setCoverHeight(null)
     setIsDragging(false)
     setIsResizing(false)
@@ -79,6 +135,7 @@ function MangaModal({
       if (event.key !== 'Escape') return
 
       setForm(getInitialForm(null, readingStatuses))
+      setIsUpdateTimeEdited(false)
       setCoverHeight(null)
       setIsDragging(false)
       setIsResizing(false)
@@ -99,17 +156,7 @@ function MangaModal({
           if (!file) continue
 
           event.preventDefault()
-          const reader = new FileReader()
-          reader.onload = () => {
-            setForm((currentForm) => ({
-              ...currentForm,
-              coverUrl: String(reader.result),
-              coverPosX: 50,
-              coverPosY: 50,
-              coverFit: 'cover',
-            }))
-          }
-          reader.readAsDataURL(file)
+          applyCoverFile(file)
           return
         }
       }
@@ -133,29 +180,19 @@ function MangaModal({
       window.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('paste', handlePaste)
     }
-  }, [isOpen, onClose, readingStatuses])
+  }, [applyCoverFile, isOpen, onClose, readingStatuses])
 
   function handleFieldChange(event) {
     const { name, value } = event.target
+    if (name === 'updateTime') setIsUpdateTimeEdited(true)
     setForm((currentForm) => ({ ...currentForm, [name]: value }))
   }
 
-  function handleFileChange(event) {
+  async function handleFileChange(event) {
     const file = event.target.files?.[0]
     if (!file) return
-
-    const reader = new FileReader()
-    reader.onload = () => {
-      setForm((currentForm) => ({
-        ...currentForm,
-        coverUrl: String(reader.result),
-        coverPosX: 50,
-        coverPosY: 50,
-        coverFit: 'cover',
-      }))
-    }
-    reader.readAsDataURL(file)
     event.target.value = ''
+    await applyCoverFile(file)
   }
 
   function toggleCoverFit(event) {
@@ -223,6 +260,7 @@ function MangaModal({
 
   function resetAndClose() {
     setForm(getInitialForm(null, readingStatuses))
+    setIsUpdateTimeEdited(false)
     setCoverHeight(null)
     setIsDragging(false)
     setIsResizing(false)
@@ -236,16 +274,27 @@ function MangaModal({
 
   function handleSubmit(event) {
     event.preventDefault()
+    if (isProcessingCover) return
     const title = form.title.trim()
     if (!title) {
       titleInputRef.current?.focus()
       return
     }
 
+    const keepManualUpdateTime = isUpdateTimeEdited
+      ? Boolean(form.updateTime)
+      : Boolean(manga?.updateTime && manga.updateTimeMode !== 'auto')
+    const relatedWork = relatedWorks.find(
+      (work) => `${work.type}:${work.id}` === form.relatedWorkKey,
+    )
+
     onSave({
       title,
+      originalTitle: form.originalTitle.trim(),
       genre: form.genre.trim(),
       author: form.author.trim(),
+      updateTime: keepManualUpdateTime ? form.updateTime : getCurrentLocalDateTime(),
+      updateTimeMode: keepManualUpdateTime ? 'manual' : 'auto',
       current: Number.parseInt(form.current, 10) || 0,
       total: form.total === '' ? null : Number.parseInt(form.total, 10) || 0,
       link: form.link.trim(),
@@ -254,6 +303,9 @@ function MangaModal({
       coverPosX: form.coverPosX,
       coverPosY: form.coverPosY,
       coverFit: form.coverFit,
+      relatedWork: relatedWork
+        ? { id: relatedWork.id, type: relatedWork.type, title: relatedWork.title }
+        : null,
     })
   }
 
@@ -280,7 +332,7 @@ function MangaModal({
     >
       <section className="modal-card" role="dialog" aria-modal="true" aria-label={manga ? '編輯追漫' : '新增追漫'}>
         <button className="modal-close" type="button" aria-label="關閉" onClick={resetAndClose}>
-          ✕
+          <FiX aria-hidden="true" />
         </button>
 
         <div
@@ -299,30 +351,34 @@ function MangaModal({
           onPointerLeave={endCoverDrag}
         >
           <button
-            className="cover-btn"
+            className="cover-btn button-with-icon"
             type="button"
+            disabled={isProcessingCover}
             onPointerDown={(event) => event.stopPropagation()}
             onClick={() => fileInputRef.current?.click()}
           >
-            {form.coverUrl ? '✎ 更換封面' : '＋ 新增封面'}
+            {form.coverUrl ? <FiEdit3 aria-hidden="true" /> : <FiImage aria-hidden="true" />}
+            {isProcessingCover ? '處理圖片中…' : form.coverUrl ? '更換封面' : '新增封面'}
           </button>
           {form.coverUrl && (
             <button
-              className="cover-fit-btn"
+              className="cover-fit-btn button-with-icon"
               type="button"
               title="切換填滿／顯示全圖"
               onPointerDown={(event) => event.stopPropagation()}
               onClick={toggleCoverFit}
             >
-              {form.coverFit === 'cover' ? '⛶ 顯示全圖' : '⛶ 填滿裁切'}
+              <FiMaximize aria-hidden="true" />
+              {form.coverFit === 'cover' ? '顯示全圖' : '填滿裁切'}
             </button>
           )}
-          <span className="cover-drag-hint">🖱️ 拖曳可調整顯示位置</span>
+          <span className="cover-drag-hint icon-label"><FiMove aria-hidden="true" /> 拖曳可調整顯示位置</span>
           {!form.coverUrl && (
             <span className="cover-paste-hint">
+              <FiClipboard aria-hidden="true" />
               {isCoverFocused
-                ? '✅ 已就緒，貼上圖片或圖片網址吧！'
-                : '📋 也可直接貼上圖片或圖片網址（Ctrl/Cmd+V）'}
+                ? '已就緒，貼上圖片或圖片網址吧！'
+                : '也可直接貼上圖片或圖片網址（Ctrl/Cmd+V）'}
             </span>
           )}
           <div
@@ -346,8 +402,9 @@ function MangaModal({
           className="modal-inner"
           style={{ minHeight: coverHeight ? `calc(100% - ${coverHeight}px)` : undefined }}
         >
-          <div className="modal-eyebrow">
-            {manga ? '✎ 編輯追漫作品' : '📌 新增追漫作品'}
+          <div className="modal-eyebrow icon-label">
+            {manga ? <FiEdit3 aria-hidden="true" /> : <FiTag aria-hidden="true" />}
+            {manga ? '編輯追漫作品' : '新增追漫作品'}
           </div>
 
           <form className="manga-form" onSubmit={handleSubmit}>
@@ -360,6 +417,29 @@ function MangaModal({
               required
               onChange={handleFieldChange}
             />
+
+            <div className="form-row">
+              <div className="form-field">
+                <label htmlFor="manga-original-title">原作名稱</label>
+                <input
+                  id="manga-original-title"
+                  name="originalTitle"
+                  value={form.originalTitle}
+                  placeholder="例如：原文或日文名稱"
+                  onChange={handleFieldChange}
+                />
+              </div>
+              <div className="form-field">
+                <label htmlFor="manga-update-time">更新時間</label>
+                <input
+                  id="manga-update-time"
+                  name="updateTime"
+                  type="datetime-local"
+                  value={form.updateTime}
+                  onChange={handleFieldChange}
+                />
+              </div>
+            </div>
 
             <div className="form-row">
               <div className="form-field">
@@ -434,10 +514,23 @@ function MangaModal({
               </select>
             </div>
 
+            <div className="form-field">
+              <label htmlFor="manga-related-work">關聯作品</label>
+              <SearchableSelect
+                id="manga-related-work"
+                value={form.relatedWorkKey}
+                options={relationOptions}
+                placeholder="輸入書名搜尋追漫或實體書…"
+                onChange={(relatedWorkKey) =>
+                  setForm((currentForm) => ({ ...currentForm, relatedWorkKey }))
+                }
+              />
+            </div>
+
             <div className="modal-actions">
               <button className="btn-cancel" type="button" onClick={resetAndClose}>取消</button>
-              <button className="btn-submit" type="submit">
-                {manga ? '儲存變更' : '貼上書架'}
+              <button className="btn-submit" type="submit" disabled={isProcessingCover}>
+                {isProcessingCover ? '處理圖片中…' : manga ? '儲存變更' : '貼上書架'}
               </button>
             </div>
           </form>

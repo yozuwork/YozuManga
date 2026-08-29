@@ -1,0 +1,82 @@
+.display-mode-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.display-mode-control select {
+  padding: 7px 30px 7px 10px;
+  border: 2px solid var(--ink);
+  border-radius: 10px 7px 11px 8px;
+  background: var(--card);
+  color: var(--ink);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.list-view-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.list-view-actions .edit-toggle.active {
+  background: var(--marker);
+}
+
+.waterfall-status {
+  min-height: 52px;
+  padding: 4px 24px 100px;
+  color: var(--gray);
+  text-align: center;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+@media (max-width: 640px) {
+  .list-view-actions {
+    width: 100%;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    gap: 8px;
+    margin-left: 0;
+  }
+
+  .list-view-actions .sort-hint,
+  .list-view-actions .display-mode-control > svg {
+    display: none;
+  }
+
+  .display-mode-control > span {
+    display: none;
+  }
+
+  .display-mode-control select {
+    max-width: 120px;
+    padding: 7px 24px 7px 9px;
+    border: 0;
+    background: var(--card);
+    box-shadow: 0 2px 8px rgba(24, 24, 24, 0.05);
+  }
+
+  .list-view-actions .selection-button {
+    padding: 7px 10px;
+    border: 0;
+    background: var(--card);
+    box-shadow: 0 2px 8px rgba(24, 24, 24, 0.05);
+  }
+
+  .list-view-actions .edit-toggle.active {
+    background: var(--marker);
+  }
+
+  .waterfall-status {
+    padding-bottom: 120px;
+  }
+}

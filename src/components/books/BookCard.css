@@ -2,6 +2,17 @@
   margin-top: 8px;
 }
 
+.edition-code {
+  display: inline-flex;
+  min-width: 20px;
+  justify-content: center;
+  padding: 1px 3px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  font-size: 8px;
+  letter-spacing: 0.3px;
+}
+
 .track i.mint {
   background: var(--mint);
 }

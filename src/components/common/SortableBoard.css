@@ -1,0 +1,41 @@
+.sortable-card-shell {
+  min-width: 0;
+  touch-action: manipulation;
+}
+
+.sortable-card-shell > .sticky {
+  height: 100%;
+}
+
+.sortable-card-shell:nth-child(3n + 1) > .sticky {
+  transform: rotate(-1.4deg);
+}
+
+.sortable-card-shell:nth-child(3n + 2) > .sticky {
+  transform: rotate(1.1deg);
+}
+
+.sortable-card-shell:nth-child(3n) > .sticky {
+  transform: rotate(-0.6deg);
+}
+
+.sortable-card-shell:hover > .sticky,
+.sortable-card-shell.dragging > .sticky {
+  transform: rotate(0deg) translateY(-3px);
+}
+
+.sortable-card-shell.dragging {
+  z-index: 50;
+  cursor: grabbing;
+  opacity: 0.78;
+}
+
+@media (max-width: 640px) {
+  .sortable-card-shell:nth-child(odd) > .sticky {
+    transform: rotate(-0.6deg);
+  }
+
+  .sortable-card-shell:nth-child(even) > .sticky {
+    transform: rotate(0.5deg);
+  }
+}

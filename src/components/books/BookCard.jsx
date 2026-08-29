@@ -1,19 +1,22 @@
 import '../manga/MangaCard.css'
+import { FiCornerUpRight, FiEdit3, FiGlobe, FiMove, FiTrash2 } from 'react-icons/fi'
 import './BookCard.css'
+import CardSelectionControl from '../common/CardSelectionControl.jsx'
+import useCoverPositionDrag from '../../hooks/useCoverPositionDrag.js'
 
 function getProgress(edition) {
   if (!edition.total) return edition.current > 0 ? 100 : 0
   return Math.min(100, Math.round((edition.current / edition.total) * 100))
 }
 
-function EditionProgress({ flag, edition, addSpacing = false, progressClass = '' }) {
+function EditionProgress({ label, edition, addSpacing = false, progressClass = '' }) {
   if (!edition.current) return null
 
   return (
     <div className={addSpacing ? 'edition-progress spaced' : 'edition-progress'}>
       <div className="prow">
-        <span>{flag} {edition.current} 冊</span>
-        <span>{edition.total ? `/ ${edition.total}` : '收集中'}</span>
+        <span><strong className="edition-code">{label}</strong> 當前 {edition.current} 冊</span>
+        <span>{edition.total ? `總共 ${edition.total} 冊` : '總冊數未設定'}</span>
       </div>
       <div className="track">
         <i className={progressClass} style={{ width: `${getProgress(edition)}%` }} />
@@ -22,57 +25,134 @@ function EditionProgress({ flag, edition, addSpacing = false, progressClass = ''
   )
 }
 
-function BookCard({ book, statusClass, onEdit }) {
+function BookCard({
+  book,
+  statusClass,
+  onEdit,
+  onDelete,
+  selectionMode,
+  selected,
+  onToggleSelect,
+  relatedWorks,
+  onNavigateRelated,
+  onUpdateCoverPosition,
+  editMode,
+}) {
+  const coverPosition = useCoverPositionDrag(book, onUpdateCoverPosition, editMode)
   const tagClassName = ['tag', statusClass].filter(Boolean).join(' ')
   const coverStyle = book.coverUrl
     ? {
         backgroundImage: `url("${book.coverUrl.replace(/"/g, '\\"')}")`,
-        backgroundPosition: `${book.coverPosX}% ${book.coverPosY}%`,
+        backgroundPosition: `${coverPosition.position.x}% ${coverPosition.position.y}%`,
         backgroundSize: book.coverFit,
       }
     : undefined
-  const meta = [book.publisher, book.shelf].filter(Boolean).join('・') || '未分類出版資訊'
+  const meta = [book.publisher, book.shelf].filter(Boolean).join('・')
+  const relatedWork = book.relatedWork
+    ? relatedWorks.find(
+        (work) => work.id === book.relatedWork.id && work.type === book.relatedWork.type,
+      ) ?? book.relatedWork
+    : null
 
   function handleKeyDown(event) {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault()
-      onEdit(book)
+      event.stopPropagation()
+      if (selectionMode) onToggleSelect(book.id)
+      else onEdit(book)
     }
+  }
+
+  function handleCardClick() {
+    if (coverPosition.isAdjusting) {
+      coverPosition.cancelAdjusting()
+      return
+    }
+    if (selectionMode) onToggleSelect(book.id)
+    else onEdit(book)
   }
 
   return (
     <article
-      className="sticky"
+      className={selected ? 'sticky card-selected' : 'sticky'}
       role="button"
       tabIndex="0"
-      onClick={() => onEdit(book)}
+      aria-pressed={selectionMode ? selected : undefined}
+      onClick={handleCardClick}
       onKeyDown={handleKeyDown}
     >
       <div className="pin" />
-      <div className="cover" style={coverStyle}>
+      {selectionMode && (
+        <CardSelectionControl
+          selected={selected}
+          label={`${selected ? '取消選取' : '選取'}${book.title}`}
+          onToggle={() => onToggleSelect(book.id)}
+        />
+      )}
+      {editMode && (
+        <button
+          className={selectionMode ? 'card-remove with-selection' : 'card-remove'}
+          type="button"
+          title="刪除實體書"
+          aria-label={`刪除${book.title}`}
+          onPointerDown={(event) => event.stopPropagation()}
+          onClick={(event) => {
+            event.stopPropagation()
+            onDelete(book)
+          }}
+          onKeyDown={(event) => event.stopPropagation()}
+        >
+          <FiTrash2 aria-hidden="true" />
+        </button>
+      )}
+      {editMode && book.coverUrl && book.coverFit !== 'contain' && (
+        <button
+          className="card-cover-position active"
+          type="button"
+          title="封面可直接拖曳調整顯示範圍"
+          aria-label="封面可直接拖曳調整顯示範圍"
+          onPointerDown={(event) => event.stopPropagation()}
+          onClick={(event) => event.stopPropagation()}
+        >
+          <FiMove aria-hidden="true" />
+        </button>
+      )}
+      <div
+        className={editMode && book.coverUrl && book.coverFit !== 'contain' ? 'cover repositioning' : 'cover'}
+        style={coverStyle}
+        onPointerDown={coverPosition.handlePointerDown}
+        onPointerMove={coverPosition.handlePointerMove}
+        onPointerUp={coverPosition.handlePointerEnd}
+        onPointerCancel={coverPosition.handlePointerCancel}
+        onClick={coverPosition.handleCoverClick}
+      >
         {!book.coverUrl && <span>{book.title}</span>}
+        {coverPosition.isAdjusting && <span className="cover-position-hint">拖曳調整顯示範圍</span>}
         <div className={tagClassName}>{book.status}</div>
       </div>
       <div className="info">
         <h3>{book.title}</h3>
-        {book.author && <div className="author-line">✍️ {book.author}</div>}
-        <div className="meta">{meta}</div>
-
-        {book.legacySingleEdition ? (
-          <>
-            <div className="prow">
-              <span>已收 {book.tw.current} 冊</span>
-              <span>{book.tw.total ? `/ ${book.tw.total}` : '收集中'}</span>
-            </div>
-            <div className="track">
-              <i className={book.progressClass} style={{ width: `${getProgress(book.tw)}%` }} />
-            </div>
-          </>
-        ) : (
-          <>
-            <EditionProgress flag="🇯🇵" edition={book.jp} />
-            <EditionProgress flag="🇹🇼" edition={book.tw} addSpacing={book.jp.current > 0} />
-          </>
+        {book.originalTitle && (
+          <div className="original-title-line icon-label" title={book.originalTitle}>
+            <FiGlobe aria-hidden="true" /> {book.originalTitle}
+          </div>
+        )}
+        {book.author && <div className="author-line icon-label"><FiEdit3 aria-hidden="true" /> {book.author}</div>}
+        {meta && <div className="meta">{meta}</div>}
+        {relatedWork && (
+          <button
+            className="related-work-btn"
+            type="button"
+            title={`前往${relatedWork.title}`}
+            onClick={(event) => {
+              event.stopPropagation()
+              onNavigateRelated(relatedWork)
+            }}
+            onKeyDown={(event) => event.stopPropagation()}
+          >
+            <FiCornerUpRight aria-hidden="true" />
+            <span>傳送門：{relatedWork.title}</span>
+          </button>
         )}
 
         {book.genre && (
@@ -80,6 +160,24 @@ function BookCard({ book, statusClass, onEdit }) {
             <span className="chip">{book.genre}</span>
           </div>
         )}
+        <div className="card-progress-block">
+          {book.legacySingleEdition ? (
+            <>
+              <div className="prow">
+                <span>當前 {book.tw.current} 冊</span>
+                <span>{book.tw.total ? `總共 ${book.tw.total} 冊` : '總冊數未設定'}</span>
+              </div>
+              <div className="track">
+                <i className={book.progressClass} style={{ width: `${getProgress(book.tw)}%` }} />
+              </div>
+            </>
+          ) : (
+            <>
+              <EditionProgress label="JP" edition={book.jp} />
+              <EditionProgress label="TW" edition={book.tw} addSpacing={book.jp.current > 0} />
+            </>
+          )}
+        </div>
       </div>
     </article>
   )
