@@ -111,6 +111,8 @@ function CategoriesPage({
         <ListViewActions
           value={display.mode}
           onChange={display.setMode}
+          cardSize={display.cardSize}
+          onCardSizeChange={display.setCardSize}
           isEditing={isEditingCards}
           onToggleEditing={() => {
             if (isEditingCards) {
@@ -140,6 +142,7 @@ function CategoriesPage({
         items={display.displayItems}
         disabled={selection.isSelecting}
         onReorder={reorderVisibleCategories}
+        cardSize={display.cardSize}
       >
         {(category) => (
           <CategoryCard

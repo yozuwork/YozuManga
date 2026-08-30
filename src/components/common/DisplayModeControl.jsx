@@ -1,16 +1,27 @@
-import { FiCheck, FiCheckSquare, FiEdit3, FiGrid } from 'react-icons/fi'
+import { FiCheck, FiCheckSquare, FiEdit3 } from 'react-icons/fi'
 import './DisplayModeControl.css'
 
 function DisplayModeControl({ value, onChange }) {
   return (
     <label className="display-mode-control">
-      <FiGrid aria-hidden="true" />
-      <span>顯示</span>
       <select value={value} onChange={(event) => onChange(event.target.value)}>
         <option value="12">12 筆／頁</option>
         <option value="36">36 筆／頁</option>
         <option value="48">48 筆／頁</option>
         <option value="waterfall">瀑布流</option>
+      </select>
+    </label>
+  )
+}
+
+function CardSizeControl({ value, onChange }) {
+  return (
+    <label className="card-size-control">
+      <span>卡片</span>
+      <select aria-label="卡片大小" value={value} onChange={(event) => onChange(event.target.value)}>
+        <option value="large">大</option>
+        <option value="medium">中</option>
+        <option value="small">小</option>
       </select>
     </label>
   )
@@ -29,12 +40,15 @@ export function WaterfallStatus({ shownCount, totalItems, hasMore, loadMoreRef }
 export function ListViewActions({
   value,
   onChange,
+  cardSize,
+  onCardSizeChange,
   onStartSelecting,
   isEditing,
   onToggleEditing,
 }) {
   return (
     <div className="list-view-actions">
+      {onCardSizeChange && <CardSizeControl value={cardSize} onChange={onCardSizeChange} />}
       <DisplayModeControl value={value} onChange={onChange} />
       {onToggleEditing && (
         <button

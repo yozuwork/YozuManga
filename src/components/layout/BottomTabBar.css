@@ -12,7 +12,7 @@
     display: flex;
     align-items: center;
     justify-content: space-around;
-    padding: 9px 8px calc(9px + env(safe-area-inset-bottom));
+    padding: 9px 8px calc(16px + env(safe-area-inset-bottom));
     border-top: 3px solid var(--ink);
     background: var(--card);
   }

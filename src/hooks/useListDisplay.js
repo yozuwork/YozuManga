@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import usePagination, { DEFAULT_PAGE_SIZE } from './usePagination.js'
 
 const DISPLAY_MODE_KEY = 'yozu-library-display-mode'
+const CARD_SIZE_KEY = 'yozu-library-card-size'
 const VALID_MODES = new Set(['12', '36', '48', 'waterfall'])
+const VALID_CARD_SIZES = new Set(['large', 'medium', 'small'])
 
 function getInitialMode() {
   try {
@@ -13,8 +15,18 @@ function getInitialMode() {
   }
 }
 
+function getInitialCardSize() {
+  try {
+    const savedSize = window.localStorage.getItem(CARD_SIZE_KEY)
+    return VALID_CARD_SIZES.has(savedSize) ? savedSize : 'medium'
+  } catch {
+    return 'medium'
+  }
+}
+
 export default function useListDisplay(items, resetKey) {
   const [mode, setModeState] = useState(getInitialMode)
+  const [cardSize, setCardSizeState] = useState(getInitialCardSize)
   const [waterfallCount, setWaterfallCount] = useState(DEFAULT_PAGE_SIZE)
   const loadMoreRef = useRef(null)
   const isWaterfall = mode === 'waterfall'
@@ -30,6 +42,16 @@ export default function useListDisplay(items, resetKey) {
     setModeState(nextMode)
     try {
       window.localStorage.setItem(DISPLAY_MODE_KEY, nextMode)
+    } catch {
+      // 無法使用 localStorage 時，仍保留本次頁面的選擇。
+    }
+  }
+
+  function setCardSize(nextSize) {
+    if (!VALID_CARD_SIZES.has(nextSize)) return
+    setCardSizeState(nextSize)
+    try {
+      window.localStorage.setItem(CARD_SIZE_KEY, nextSize)
     } catch {
       // 無法使用 localStorage 時，仍保留本次頁面的選擇。
     }
@@ -57,6 +79,8 @@ export default function useListDisplay(items, resetKey) {
   return {
     mode,
     setMode,
+    cardSize,
+    setCardSize,
     isWaterfall,
     displayItems,
     hasMore,

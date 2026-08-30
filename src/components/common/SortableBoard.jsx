@@ -36,7 +36,7 @@ function SortableItem({ id, disabled, children }) {
   )
 }
 
-function SortableBoard({ items, disabled = false, onReorder, children }) {
+function SortableBoard({ items, disabled = false, onReorder, cardSize = 'medium', children }) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 6 } }),
@@ -55,7 +55,7 @@ function SortableBoard({ items, disabled = false, onReorder, children }) {
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext items={ids} strategy={rectSortingStrategy}>
-        <div className="board">
+        <div className={`board card-size-${cardSize}`}>
           {items.map((item) => (
             <SortableItem id={item.id} key={item.id} disabled={disabled}>
               {children(item)}

@@ -53,11 +53,13 @@ function BooksPage({
 
   const normalizedQuery = searchQuery.trim().toLocaleLowerCase('zh-Hant')
   const visibleBooks = bookList.filter((book) => {
-    const matchesStatus = activeBookStatus === 'all' || book.status === activeBookStatus
+    const statuses = book.statuses?.length ? book.statuses : [book.status]
+    const genres = book.genres?.length ? book.genres : [book.genre]
+    const matchesStatus = activeBookStatus === 'all' || statuses.includes(activeBookStatus)
     const searchableText = [
       book.title,
       book.originalTitle,
-      book.genre,
+      ...genres,
       book.author,
       book.publisher,
       book.shelf,
@@ -213,6 +215,8 @@ function BooksPage({
         <ListViewActions
           value={display.mode}
           onChange={display.setMode}
+          cardSize={display.cardSize}
+          onCardSizeChange={display.setCardSize}
           isEditing={isEditingCards}
           onToggleEditing={() => {
             if (isEditingCards) {
@@ -259,11 +263,12 @@ function BooksPage({
         items={display.displayItems}
         disabled={selection.isSelecting}
         onReorder={reorderVisibleBooks}
+        cardSize={display.cardSize}
       >
         {(book) => (
           <BookCard
             book={book}
-            statusClass={readingStatuses.find((status) => status.name === book.status)?.color ?? 'marker'}
+            readingStatuses={readingStatuses}
             onEdit={openEditModal}
             onDelete={deleteBook}
             selectionMode={selection.isSelecting}

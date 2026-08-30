@@ -221,24 +221,33 @@ export default function useLibraryData() {
     const remaining = readingStatuses.filter((item) => item.id !== id)
     const mangaFallback = remaining.find((item) => item.types.includes('manga')) ?? remaining[0]
     const bookFallback = remaining.find((item) => item.types.includes('book')) ?? remaining[0]
-    const affectedMangas = mangaList.filter((item) => item.status === status.name)
-    const affectedBooks = bookList.filter((item) => item.status === status.name)
+    const hasStatus = (item) => (
+      item.statuses?.length ? item.statuses : [item.status]
+    ).includes(status.name)
+    const nextStatusData = (item, fallback) => {
+      const statuses = (item.statuses?.length ? item.statuses : [item.status])
+        .filter((name) => name && name !== status.name)
+      if (!statuses.length) statuses.push(fallback.name)
+      return { status: statuses[0], statuses }
+    }
+    const affectedMangas = mangaList.filter(hasStatus)
+    const affectedBooks = bookList.filter(hasStatus)
 
     await Promise.all([
-      ...affectedMangas.map((item) => updateManga(item.id, { status: mangaFallback.name })),
-      ...affectedBooks.map((item) => updateBook(item.id, { status: bookFallback.name })),
+      ...affectedMangas.map((item) => updateManga(item.id, nextStatusData(item, mangaFallback))),
+      ...affectedBooks.map((item) => updateBook(item.id, nextStatusData(item, bookFallback))),
     ])
     await deleteStatus(id)
 
     setReadingStatuses(remaining)
     setMangaList((list) =>
       list.map((item) =>
-        item.status === status.name ? { ...item, status: mangaFallback.name } : item,
+        hasStatus(item) ? { ...item, ...nextStatusData(item, mangaFallback) } : item,
       ),
     )
     setBookList((list) =>
       list.map((item) =>
-        item.status === status.name ? { ...item, status: bookFallback.name } : item,
+        hasStatus(item) ? { ...item, ...nextStatusData(item, bookFallback) } : item,
       ),
     )
     return true

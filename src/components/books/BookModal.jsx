@@ -12,14 +12,14 @@ import {
 import '../manga/MangaModal.css'
 import './BookModal.css'
 import { useDialog } from '../common/DialogProvider.jsx'
-import SearchableSelect from '../common/SearchableSelect.jsx'
+import MultiSelectTags from '../common/MultiSelectTags.jsx'
 import { compressCoverImage } from '../../utils/compressCoverImage.js'
 import { getCurrentLocalDateTime } from '../../utils/dateTime.js'
 
 const EMPTY_FORM = {
   title: '',
   originalTitle: '',
-  genre: '',
+  genres: [],
   author: '',
   updateTime: '',
   publisher: '',
@@ -28,12 +28,12 @@ const EMPTY_FORM = {
   jpTotal: '',
   twCurrent: '',
   twTotal: '',
-  status: '',
+  statuses: [],
   coverUrl: '',
   coverPosX: 50,
   coverPosY: 50,
   coverFit: 'cover',
-  relatedWorkKey: '',
+  relatedWorkKeys: [],
 }
 
 function getInitialForm(book, readingStatuses) {
@@ -41,7 +41,7 @@ function getInitialForm(book, readingStatuses) {
   if (!book) {
     return {
       ...EMPTY_FORM,
-      status: fallbackStatus,
+      statuses: fallbackStatus ? [fallbackStatus] : [],
       updateTime: getCurrentLocalDateTime(),
     }
   }
@@ -49,7 +49,7 @@ function getInitialForm(book, readingStatuses) {
   return {
     title: book.title,
     originalTitle: book.originalTitle ?? '',
-    genre: book.genre ?? '',
+    genres: book.genres?.length ? book.genres : book.genre ? [book.genre] : [],
     author: book.author ?? '',
     updateTime:
       book.updateTimeMode !== 'auto' && book.updateTime
@@ -61,16 +61,16 @@ function getInitialForm(book, readingStatuses) {
     jpTotal: book.jp?.total ?? '',
     twCurrent: book.tw?.current ?? '',
     twTotal: book.tw?.total ?? '',
-    status: readingStatuses.some((status) => status.name === book.status)
-      ? book.status
-      : fallbackStatus,
+    statuses: (book.statuses?.length ? book.statuses : book.status ? [book.status] : [fallbackStatus])
+      .filter((name) => readingStatuses.some((status) => status.name === name)),
     coverUrl: book.coverUrl ?? '',
     coverPosX: book.coverPosX ?? 50,
     coverPosY: book.coverPosY ?? 50,
     coverFit: book.coverFit ?? 'cover',
-    relatedWorkKey: book.relatedWork
-      ? `${book.relatedWork.type}:${book.relatedWork.id}`
-      : '',
+    relatedWorkKeys: (book.relatedWorks?.length
+      ? book.relatedWorks
+      : book.relatedWork ? [book.relatedWork] : [])
+      .map((work) => `${work.type}:${work.id}`),
   }
 }
 
@@ -286,20 +286,23 @@ function BookModal({
     const keepManualUpdateTime = isUpdateTimeEdited
       ? Boolean(form.updateTime)
       : Boolean(book?.updateTime && book.updateTimeMode !== 'auto')
-    const relatedWork = relatedWorks.find(
-      (work) => `${work.type}:${work.id}` === form.relatedWorkKey,
-    )
+    const selectedRelatedWorks = form.relatedWorkKeys
+      .map((key) => relatedWorks.find((work) => `${work.type}:${work.id}` === key))
+      .filter(Boolean)
+      .map((work) => ({ id: work.id, type: work.type, title: work.title }))
 
     onSave({
       title,
       originalTitle: form.originalTitle.trim(),
-      genre: form.genre.trim(),
+      genre: form.genres[0] ?? '',
+      genres: form.genres,
       author: form.author.trim(),
       updateTime: keepManualUpdateTime ? form.updateTime : getCurrentLocalDateTime(),
       updateTimeMode: keepManualUpdateTime ? 'manual' : 'auto',
       publisher: form.publisher.trim(),
       shelf: form.shelf.trim(),
-      status: form.status,
+      status: form.statuses[0] ?? '',
+      statuses: form.statuses,
       jp: { current: toNumber(form.jpCurrent), total: toOptionalNumber(form.jpTotal) },
       tw: { current: toNumber(form.twCurrent), total: toOptionalNumber(form.twTotal) },
       coverUrl: form.coverUrl,
@@ -308,9 +311,8 @@ function BookModal({
       coverFit: form.coverFit,
       legacySingleEdition: false,
       progressClass: '',
-      relatedWork: relatedWork
-        ? { id: relatedWork.id, type: relatedWork.type, title: relatedWork.title }
-        : null,
+      relatedWork: selectedRelatedWorks[0] ?? null,
+      relatedWorks: selectedRelatedWorks,
     })
   }
 
@@ -397,14 +399,18 @@ function BookModal({
             {book ? '編輯書本' : '新增書本'}
           </div>
           <form className="book-form" onSubmit={handleSubmit}>
-            <input
+            <textarea
               ref={titleInputRef}
               className="title-input"
               name="title"
+              rows="1"
               value={form.title}
               placeholder="輸入書名…"
               required
               onChange={handleFieldChange}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') event.preventDefault()
+              }}
             />
 
             <div className="form-row">
@@ -432,12 +438,14 @@ function BookModal({
 
             <div className="form-row">
               <div className="form-field">
-                <label htmlFor="book-genre">分類</label>
-                <select id="book-genre" name="genre" value={form.genre} onChange={handleFieldChange}>
-                  <option value="">未分類</option>
-                  {form.genre && !genreOptions.includes(form.genre) && <option value={form.genre}>{form.genre}（未收錄分類）</option>}
-                  {genreOptions.map((genre) => <option value={genre} key={genre}>{genre}</option>)}
-                </select>
+                <label htmlFor="book-genres">分類</label>
+                <MultiSelectTags
+                  id="book-genres"
+                  values={form.genres}
+                  options={genreOptions}
+                  placeholder=""
+                  onChange={(genres) => setForm((currentForm) => ({ ...currentForm, genres }))}
+                />
               </div>
               <div className="form-field">
                 <label htmlFor="book-author">作者</label>
@@ -460,21 +468,29 @@ function BookModal({
             <EditionFields label="TW 台版" prefix="tw" form={form} onChange={handleFieldChange} />
 
             <div className="form-field">
-              <label htmlFor="book-status">閱讀狀態</label>
-              <select id="book-status" name="status" value={form.status} onChange={handleFieldChange}>
-                {readingStatuses.map((status) => <option value={status.name} key={status.name}>{status.name}</option>)}
-              </select>
+              <label htmlFor="book-statuses">閱讀狀態</label>
+              <MultiSelectTags
+                id="book-statuses"
+                values={form.statuses}
+                options={readingStatuses.map((status) => ({
+                  value: status.name,
+                  label: status.name,
+                  color: status.color,
+                }))}
+                placeholder="選擇一個或多個閱讀狀態…"
+                onChange={(statuses) => setForm((currentForm) => ({ ...currentForm, statuses }))}
+              />
             </div>
 
             <div className="form-field">
               <label htmlFor="book-related-work">關聯作品</label>
-              <SearchableSelect
+              <MultiSelectTags
                 id="book-related-work"
-                value={form.relatedWorkKey}
+                values={form.relatedWorkKeys}
                 options={relationOptions}
                 placeholder="輸入書名搜尋追漫或實體書…"
-                onChange={(relatedWorkKey) =>
-                  setForm((currentForm) => ({ ...currentForm, relatedWorkKey }))
+                onChange={(relatedWorkKeys) =>
+                  setForm((currentForm) => ({ ...currentForm, relatedWorkKeys }))
                 }
               />
             </div>

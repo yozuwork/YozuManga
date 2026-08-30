@@ -1,0 +1,135 @@
+.multi-select-tags {
+  position: relative;
+}
+
+.multi-select-input {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 7px 38px 7px 12px;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  background: var(--paper);
+  cursor: text;
+}
+
+.multi-select-input.open {
+  box-shadow: 0 0 0 3px var(--marker-soft);
+}
+
+.form-field .multi-select-input input {
+  width: auto;
+  min-width: 130px;
+  flex: 1;
+  padding: 3px 0;
+  border: 0;
+  border-radius: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+}
+
+.multi-search-icon {
+  flex: 0 0 auto;
+  color: var(--gray);
+}
+
+.multi-chevron {
+  position: absolute;
+  top: 15px;
+  right: 13px;
+  pointer-events: none;
+}
+
+.multi-value-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 6px 4px 9px;
+  border-radius: 6px;
+  background: var(--marker);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.multi-value-tag.mint,
+.multi-option-dot.mint { background: var(--mint); }
+.multi-value-tag.pink,
+.multi-option-dot.pink { background: var(--pink); }
+.multi-value-tag.gray,
+.multi-option-dot.gray { background: #d6d2c4; }
+.multi-value-tag.sky,
+.multi-option-dot.sky { background: #93b8d8; }
+.multi-value-tag.lavender,
+.multi-option-dot.lavender { background: #c3a8d8; }
+
+.multi-value-tag button {
+  display: inline-flex;
+  padding: 1px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.multi-options {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 6px);
+  right: 0;
+  left: 0;
+  max-height: 230px;
+  padding: 6px;
+  overflow-y: auto;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  background: var(--card);
+  box-shadow: 4px 5px 0 rgba(24, 24, 24, 0.85);
+}
+
+.multi-option {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.multi-option:hover,
+.multi-option.selected {
+  background: var(--marker-soft);
+}
+
+.multi-option-dot {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+  border-radius: 3px;
+  background: var(--marker);
+}
+
+.multi-option small {
+  margin-left: auto;
+  color: var(--gray);
+}
+
+.multi-option > svg {
+  flex: 0 0 auto;
+}
+
+.multi-options-empty {
+  padding: 12px;
+  color: var(--gray);
+  text-align: center;
+  font-size: 12px;
+}

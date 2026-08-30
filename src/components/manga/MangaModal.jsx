@@ -10,32 +10,33 @@ import {
 } from 'react-icons/fi'
 import './MangaModal.css'
 import { useDialog } from '../common/DialogProvider.jsx'
-import SearchableSelect from '../common/SearchableSelect.jsx'
+import MultiSelectTags from '../common/MultiSelectTags.jsx'
 import { compressCoverImage } from '../../utils/compressCoverImage.js'
 import { getCurrentLocalDateTime } from '../../utils/dateTime.js'
 
 const EMPTY_FORM = {
   title: '',
   originalTitle: '',
-  genre: '',
+  genres: [],
   author: '',
   updateTime: '',
   current: '',
   total: '',
+  serializationStatus: '連載中',
   link: '',
-  status: '',
+  statuses: [],
   coverUrl: '',
   coverPosX: 50,
   coverPosY: 50,
   coverFit: 'cover',
-  relatedWorkKey: '',
+  relatedWorkKeys: [],
 }
 
 function getInitialForm(manga, readingStatuses) {
   if (!manga) {
     return {
       ...EMPTY_FORM,
-      status: readingStatuses[0]?.name ?? '',
+      statuses: readingStatuses[0]?.name ? [readingStatuses[0].name] : [],
       updateTime: getCurrentLocalDateTime(),
     }
   }
@@ -43,7 +44,7 @@ function getInitialForm(manga, readingStatuses) {
   return {
     title: manga.title,
     originalTitle: manga.originalTitle ?? '',
-    genre: manga.genre ?? '',
+    genres: manga.genres?.length ? manga.genres : manga.genre ? [manga.genre] : [],
     author: manga.author ?? '',
     updateTime:
       manga.updateTimeMode !== 'auto' && manga.updateTime
@@ -51,17 +52,19 @@ function getInitialForm(manga, readingStatuses) {
         : getCurrentLocalDateTime(),
     current: manga.current ?? '',
     total: manga.total ?? '',
+    serializationStatus: manga.serializationStatus
+      ?? ((manga.statuses ?? [manga.status]).includes('已完結') ? '已完結' : '連載中'),
     link: manga.link ?? '',
-    status: readingStatuses.some((status) => status.name === manga.status)
-      ? manga.status
-      : readingStatuses[0]?.name ?? '',
+    statuses: (manga.statuses?.length ? manga.statuses : manga.status ? [manga.status] : [])
+      .filter((name) => readingStatuses.some((status) => status.name === name)),
     coverUrl: manga.coverUrl ?? '',
     coverPosX: manga.coverPosX ?? 50,
     coverPosY: manga.coverPosY ?? 50,
     coverFit: manga.coverFit ?? 'cover',
-    relatedWorkKey: manga.relatedWork
-      ? `${manga.relatedWork.type}:${manga.relatedWork.id}`
-      : '',
+    relatedWorkKeys: (manga.relatedWorks?.length
+      ? manga.relatedWorks
+      : manga.relatedWork ? [manga.relatedWork] : [])
+      .map((work) => `${work.type}:${work.id}`),
   }
 }
 
@@ -284,28 +287,31 @@ function MangaModal({
     const keepManualUpdateTime = isUpdateTimeEdited
       ? Boolean(form.updateTime)
       : Boolean(manga?.updateTime && manga.updateTimeMode !== 'auto')
-    const relatedWork = relatedWorks.find(
-      (work) => `${work.type}:${work.id}` === form.relatedWorkKey,
-    )
+    const selectedRelatedWorks = form.relatedWorkKeys
+      .map((key) => relatedWorks.find((work) => `${work.type}:${work.id}` === key))
+      .filter(Boolean)
+      .map((work) => ({ id: work.id, type: work.type, title: work.title }))
 
     onSave({
       title,
       originalTitle: form.originalTitle.trim(),
-      genre: form.genre.trim(),
+      genre: form.genres[0] ?? '',
+      genres: form.genres,
       author: form.author.trim(),
       updateTime: keepManualUpdateTime ? form.updateTime : getCurrentLocalDateTime(),
       updateTimeMode: keepManualUpdateTime ? 'manual' : 'auto',
       current: Number.parseInt(form.current, 10) || 0,
       total: form.total === '' ? null : Number.parseInt(form.total, 10) || 0,
+      serializationStatus: form.serializationStatus,
       link: form.link.trim(),
-      status: form.status,
+      status: form.statuses[0] ?? '',
+      statuses: form.statuses,
       coverUrl: form.coverUrl,
       coverPosX: form.coverPosX,
       coverPosY: form.coverPosY,
       coverFit: form.coverFit,
-      relatedWork: relatedWork
-        ? { id: relatedWork.id, type: relatedWork.type, title: relatedWork.title }
-        : null,
+      relatedWork: selectedRelatedWorks[0] ?? null,
+      relatedWorks: selectedRelatedWorks,
     })
   }
 
@@ -408,14 +414,18 @@ function MangaModal({
           </div>
 
           <form className="manga-form" onSubmit={handleSubmit}>
-            <input
+            <textarea
               ref={titleInputRef}
               className="title-input"
               name="title"
+              rows="1"
               value={form.title}
               placeholder="輸入書名…"
               required
               onChange={handleFieldChange}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') event.preventDefault()
+              }}
             />
 
             <div className="form-row">
@@ -443,16 +453,14 @@ function MangaModal({
 
             <div className="form-row">
               <div className="form-field">
-                <label htmlFor="manga-genre">分類</label>
-                <select id="manga-genre" name="genre" value={form.genre} onChange={handleFieldChange}>
-                  <option value="">未分類</option>
-                  {form.genre && !genreOptions.includes(form.genre) && (
-                    <option value={form.genre}>{form.genre}（未收錄分類）</option>
-                  )}
-                  {genreOptions.map((genre) => (
-                    <option value={genre} key={genre}>{genre}</option>
-                  ))}
-                </select>
+                <label htmlFor="manga-genres">分類</label>
+                <MultiSelectTags
+                  id="manga-genres"
+                  values={form.genres}
+                  options={genreOptions}
+                  placeholder=""
+                  onChange={(genres) => setForm((currentForm) => ({ ...currentForm, genres }))}
+                />
               </div>
               <div className="form-field">
                 <label htmlFor="manga-author">作者</label>
@@ -480,7 +488,7 @@ function MangaModal({
                 />
               </div>
               <div className="form-field">
-                <label htmlFor="manga-total">總話數（留白＝連載中）</label>
+                <label htmlFor="manga-total">總話數</label>
                 <input
                   id="manga-total"
                   name="total"
@@ -506,23 +514,43 @@ function MangaModal({
             </div>
 
             <div className="form-field">
-              <label htmlFor="manga-status">閱讀狀態</label>
-              <select id="manga-status" name="status" value={form.status} onChange={handleFieldChange}>
-                {readingStatuses.map((status) => (
-                  <option value={status.name} key={status.name}>{status.name}</option>
-                ))}
+              <label htmlFor="manga-statuses">閱讀狀態</label>
+              <MultiSelectTags
+                id="manga-statuses"
+                values={form.statuses}
+                options={readingStatuses.map((status) => ({
+                  value: status.name,
+                  label: status.name,
+                  color: status.color,
+                }))}
+                placeholder="選擇一個或多個閱讀狀態…"
+                onChange={(statuses) => setForm((currentForm) => ({ ...currentForm, statuses }))}
+              />
+            </div>
+
+            <div className="form-field">
+              <label htmlFor="manga-serialization-status">連載狀態</label>
+              <select
+                id="manga-serialization-status"
+                name="serializationStatus"
+                value={form.serializationStatus}
+                onChange={handleFieldChange}
+              >
+                <option value="連載中">連載中</option>
+                <option value="已完結">已完結</option>
+                <option value="休刊中">休刊中</option>
               </select>
             </div>
 
             <div className="form-field">
               <label htmlFor="manga-related-work">關聯作品</label>
-              <SearchableSelect
+              <MultiSelectTags
                 id="manga-related-work"
-                value={form.relatedWorkKey}
+                values={form.relatedWorkKeys}
                 options={relationOptions}
                 placeholder="輸入書名搜尋追漫或實體書…"
-                onChange={(relatedWorkKey) =>
-                  setForm((currentForm) => ({ ...currentForm, relatedWorkKey }))
+                onChange={(relatedWorkKeys) =>
+                  setForm((currentForm) => ({ ...currentForm, relatedWorkKeys }))
                 }
               />
             </div>

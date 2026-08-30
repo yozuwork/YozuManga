@@ -48,8 +48,16 @@ function MangaPage({
 
   const normalizedQuery = searchQuery.trim().toLocaleLowerCase('zh-Hant')
   const visibleManga = mangaList.filter((manga) => {
-    const matchesStatus = activeStatus === 'all' || manga.status === activeStatus
-    const searchableText = [manga.title, manga.originalTitle, manga.genre, manga.author]
+    const statuses = manga.statuses?.length ? manga.statuses : [manga.status]
+    const genres = manga.genres?.length ? manga.genres : [manga.genre]
+    const matchesStatus = activeStatus === 'all' || statuses.includes(activeStatus)
+    const searchableText = [
+      manga.title,
+      manga.originalTitle,
+      ...genres,
+      manga.author,
+      manga.serializationStatus,
+    ]
       .filter(Boolean)
       .join(' ')
       .toLocaleLowerCase('zh-Hant')
@@ -177,6 +185,8 @@ function MangaPage({
         <ListViewActions
           value={display.mode}
           onChange={display.setMode}
+          cardSize={display.cardSize}
+          onCardSizeChange={display.setCardSize}
           isEditing={isEditingCards}
           onToggleEditing={() => {
             if (isEditingCards) {
@@ -206,11 +216,12 @@ function MangaPage({
         items={display.displayItems}
         disabled={selection.isSelecting}
         onReorder={reorderVisibleMangas}
+        cardSize={display.cardSize}
       >
         {(manga) => (
           <MangaCard
             manga={manga}
-            statusClass={readingStatuses.find((status) => status.name === manga.status)?.color ?? 'marker'}
+            readingStatuses={readingStatuses}
             onEdit={openEditModal}
             onDelete={deleteManga}
             selectionMode={selection.isSelecting}

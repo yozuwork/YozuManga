@@ -27,7 +27,7 @@ function EditionProgress({ label, edition, addSpacing = false, progressClass = '
 
 function BookCard({
   book,
-  statusClass,
+  readingStatuses,
   onEdit,
   onDelete,
   selectionMode,
@@ -39,7 +39,7 @@ function BookCard({
   editMode,
 }) {
   const coverPosition = useCoverPositionDrag(book, onUpdateCoverPosition, editMode)
-  const tagClassName = ['tag', statusClass].filter(Boolean).join(' ')
+  const bookStatuses = book.statuses?.length ? book.statuses : [book.status].filter(Boolean)
   const coverStyle = book.coverUrl
     ? {
         backgroundImage: `url("${book.coverUrl.replace(/"/g, '\\"')}")`,
@@ -48,11 +48,12 @@ function BookCard({
       }
     : undefined
   const meta = [book.publisher, book.shelf].filter(Boolean).join('・')
-  const relatedWork = book.relatedWork
-    ? relatedWorks.find(
-        (work) => work.id === book.relatedWork.id && work.type === book.relatedWork.type,
-      ) ?? book.relatedWork
-    : null
+  const bookRelatedWorks = (book.relatedWorks?.length
+    ? book.relatedWorks
+    : book.relatedWork ? [book.relatedWork] : [])
+    .map((relatedWork) => relatedWorks.find(
+      (work) => work.id === relatedWork.id && work.type === relatedWork.type,
+    ) ?? relatedWork)
 
   function handleKeyDown(event) {
     if (event.key === 'Enter' || event.key === ' ') {
@@ -128,7 +129,16 @@ function BookCard({
       >
         {!book.coverUrl && <span>{book.title}</span>}
         {coverPosition.isAdjusting && <span className="cover-position-hint">拖曳調整顯示範圍</span>}
-        <div className={tagClassName}>{book.status}</div>
+        <div className="status-tags">
+          {bookStatuses.map((status) => (
+            <span
+              className={`tag ${readingStatuses.find((item) => item.name === status)?.color ?? 'marker'}`}
+              key={status}
+            >
+              {status}
+            </span>
+          ))}
+        </div>
       </div>
       <div className="info">
         <h3>{book.title}</h3>
@@ -139,10 +149,11 @@ function BookCard({
         )}
         {book.author && <div className="author-line icon-label"><FiEdit3 aria-hidden="true" /> {book.author}</div>}
         {meta && <div className="meta">{meta}</div>}
-        {relatedWork && (
+        {bookRelatedWorks.map((relatedWork) => (
           <button
             className="related-work-btn"
             type="button"
+            key={`${relatedWork.type}:${relatedWork.id}`}
             title={`前往${relatedWork.title}`}
             onClick={(event) => {
               event.stopPropagation()
@@ -153,11 +164,13 @@ function BookCard({
             <FiCornerUpRight aria-hidden="true" />
             <span>傳送門：{relatedWork.title}</span>
           </button>
-        )}
+        ))}
 
-        {book.genre && (
+        {(book.genres?.length || book.genre) && (
           <div className="chips">
-            <span className="chip">{book.genre}</span>
+            {(book.genres?.length ? book.genres : [book.genre]).map((genre) => (
+              <span className="chip" key={genre}>{genre}</span>
+            ))}
           </div>
         )}
         <div className="card-progress-block">

@@ -149,6 +149,20 @@
   font-weight: 800;
 }
 
+.status-tags {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  display: flex;
+  max-width: calc(100% - 16px);
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.status-tags .tag {
+  position: static;
+}
+
 .tag.pink {
   background: var(--pink);
 }
@@ -252,7 +266,7 @@
   align-items: center;
   justify-content: center;
   gap: 5px;
-  margin-top: 10px;
+  margin-top: auto;
   padding: 8px 12px;
   border: 2px solid var(--ink);
   border-radius: 9px;
@@ -266,6 +280,10 @@
 
 .read-link-btn:hover {
   background: #e0b93a;
+}
+
+.read-link-btn + .card-progress-block {
+  margin-top: 10px;
 }
 
 .related-work-btn {
@@ -426,14 +444,32 @@
 
   .author-line,
   .original-title-line,
-  .update-time-line,
-  .read-link-btn {
+  .update-time-line {
     display: none;
+  }
+
+  .read-link-btn {
+    gap: 3px;
+    padding: 4px 6px;
+    border-width: 1.5px;
+    border-radius: 6px;
+    font-size: 8px;
+  }
+
+  .read-link-btn + .card-progress-block {
+    margin-top: 5px;
   }
 
   .related-work-btn {
     margin-bottom: 5px;
     padding: 4px 5px;
     font-size: 7.5px;
+  }
+
+  .status-tags {
+    bottom: 4px;
+    left: 4px;
+    max-width: calc(100% - 8px);
+    gap: 2px;
   }
 }

@@ -72,7 +72,7 @@ function AuthGate({ children }) {
           <div className="auth-mark" aria-hidden="true">
             <img src={appIcon} alt="" />
           </div>
-          <h1 id="auth-title">柚子的書庫</h1>
+          <h1 id="auth-title">柚子書庫</h1>
           <p>只有管理者可以進入</p>
           <button className="button-with-icon" type="button" onClick={handleLogin} disabled={isLoggingIn}>
             <FiLogIn aria-hidden="true" />

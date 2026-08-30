@@ -193,7 +193,9 @@
 }
 
 .title-input {
+  field-sizing: content;
   width: 100%;
+  min-height: 1.35em;
   margin-bottom: 22px;
   padding: 2px 0 4px;
   border: 0;
@@ -204,6 +206,11 @@
   font-family: inherit;
   font-size: 32px;
   font-weight: 900;
+  line-height: 1.25;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  resize: none;
+  white-space: pre-wrap;
 }
 
 .title-input::placeholder {
