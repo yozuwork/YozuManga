@@ -32,6 +32,25 @@
   background: var(--marker);
 }
 
+.template-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 7px 11px;
+  border: 2px dashed var(--ink);
+  border-radius: 10px 7px 11px 8px;
+  background: var(--marker-soft);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.template-trigger:hover {
+  background: var(--marker);
+}
+
 .waterfall-status {
   min-height: 52px;
   padding: 4px 24px 100px;
@@ -73,6 +92,13 @@
 
   .list-view-actions .selection-button {
     padding: 7px 10px;
+    border: 0;
+    background: var(--card);
+    box-shadow: 0 2px 8px rgba(24, 24, 24, 0.05);
+  }
+
+  .template-trigger {
+    padding: 7px 9px;
     border: 0;
     background: var(--card);
     box-shadow: 0 2px 8px rgba(24, 24, 24, 0.05);

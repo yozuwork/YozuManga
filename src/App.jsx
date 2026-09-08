@@ -5,6 +5,8 @@ import Header from './components/layout/Header.jsx'
 import { useDialog } from './components/common/DialogProvider.jsx'
 import useLibraryData from './hooks/useLibraryData.js'
 import BooksPage from './pages/BooksPage.jsx'
+import CartPage from './pages/CartPage.jsx'
+import ExternalLinksPage from './pages/ExternalLinksPage.jsx'
 import CategoriesPage from './pages/CategoriesPage.jsx'
 import MangaPage from './pages/MangaPage.jsx'
 import SettingsPage from './pages/SettingsPage.jsx'
@@ -19,8 +21,18 @@ function App({ user }) {
   const library = useLibraryData()
   const { showMessage } = useDialog()
   const relatedWorks = [
-    ...library.mangaList.map((manga) => ({ id: manga.id, type: 'manga', title: manga.title })),
-    ...library.bookList.map((book) => ({ id: book.id, type: 'book', title: book.title })),
+    ...library.mangaList.map((manga) => ({
+      id: manga.id,
+      type: 'manga',
+      title: manga.title,
+      coverUrl: manga.coverUrl,
+    })),
+    ...library.bookList.map((book) => ({
+      id: book.id,
+      type: 'book',
+      title: book.title,
+      coverUrl: book.coverUrl,
+    })),
   ]
 
   function handleViewChange(view) {
@@ -83,11 +95,41 @@ function App({ user }) {
   const isLibraryEmpty =
     library.mangaList.length === 0 &&
     library.bookList.length === 0 &&
+    library.cartItems.length === 0 &&
+    library.externalLinks.length === 0 &&
     library.categories.length === 0 &&
     library.readingStatuses.length === 0
 
   let page
-  if (activeView === 'books') {
+  if (activeView === 'links') {
+    page = (
+      <ExternalLinksPage
+        searchQuery={searchQuery}
+        externalLinks={library.externalLinks}
+        externalLinksError={library.externalLinksError}
+        readingStatuses={library.readingStatuses}
+        onAddLink={library.createExternalLink}
+        onUpdateLink={library.editExternalLink}
+        onDeleteLink={library.removeExternalLink}
+        onReorderLinks={library.reorderExternalLinkList}
+      />
+    )
+  } else if (activeView === 'cart') {
+    page = (
+      <CartPage
+        searchQuery={searchQuery}
+        cartItems={library.cartItems}
+        cartError={library.cartError}
+        readingStatuses={library.readingStatuses}
+        relatedWorks={relatedWorks}
+        onAddItem={library.createCartItem}
+        onUpdateItem={library.editCartItem}
+        onDeleteItem={library.removeCartItem}
+        onReorderItems={library.reorderCartList}
+        onNavigateRelated={handleRelatedNavigation}
+      />
+    )
+  } else if (activeView === 'books') {
     page = (
       <BooksPage
         searchQuery={searchQuery}

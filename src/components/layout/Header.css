@@ -53,6 +53,36 @@
   transform: rotate(0.9deg);
 }
 
+.nav-link:nth-child(5) {
+  transform: rotate(-0.7deg);
+}
+
+.nav-link:nth-child(6) {
+  transform: rotate(0.6deg);
+}
+
+@media (max-width: 1120px) and (min-width: 641px) {
+  .site-header {
+    gap: 14px;
+    padding-right: 20px;
+    padding-left: 20px;
+  }
+
+  .site-nav {
+    gap: 7px;
+    margin-left: 0;
+  }
+
+  .nav-link {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .search {
+    width: 170px;
+  }
+}
+
 .nav-link.active {
   background: var(--marker);
 }

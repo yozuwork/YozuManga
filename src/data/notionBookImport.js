@@ -1,5 +1,10 @@
-import notionBooksCsv from '../../ExportBlock-95d87cd6-cd12-427d-833c-f203d4547d14-Part-1/無標題 2c4cbef6488581fd85c4d94057f42728_漫畫收藏庫 2c4cbef6488581d7955a000b9ee72b57.csv?raw'
 import { getCurrentLocalDateTime } from '../utils/dateTime.js'
+
+const notionBookCsvModules = import.meta.glob(
+  '../../ExportBlock-95d87cd6-cd12-427d-833c-f203d4547d14-Part-1/*漫畫收藏庫*.csv',
+  { eager: true, query: '?raw', import: 'default' },
+)
+const notionBooksCsv = Object.values(notionBookCsvModules)[0] ?? ''
 
 function parseCsv(source) {
   const rows = []

@@ -10,10 +10,17 @@ export const statusColorHex = {
 }
 
 export const initialReadingStatuses = [
+  { name: '追漫中', color: 'marker', types: ['manga'] },
   { name: '連載中', color: 'marker', types: ['manga', 'book'] },
   { name: '快追上了', color: 'mint', types: ['manga', 'book'] },
   { name: '已完結', color: 'pink', types: ['manga', 'book'] },
   { name: '已棄坑', color: 'gray', types: ['manga', 'book'] },
+  { name: '準備購買', color: 'pink', types: ['cart'] },
+  { name: '有興趣', color: 'marker', types: ['cart'] },
+  { name: '先收藏', color: 'mint', types: ['cart'] },
+  { name: '漫畫網站', color: 'sky', types: ['link'] },
+  { name: '書店', color: 'marker', types: ['link'] },
+  { name: '工具', color: 'mint', types: ['link'] },
 ]
 
 export const initialCategories = [

@@ -1,0 +1,33 @@
+.link-cover {
+  background-repeat: no-repeat;
+}
+
+.link-info {
+  gap: 7px;
+}
+
+.link-site {
+  margin: -3px 0 2px;
+  color: var(--gray);
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.link-info p {
+  display: -webkit-box;
+  margin: 0 0 5px;
+  overflow: hidden;
+  color: var(--gray);
+  font-size: 10.5px;
+  font-weight: 650;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+@media (max-width: 640px) {
+  .link-site,
+  .link-info p {
+    font-size: 8px;
+  }
+}

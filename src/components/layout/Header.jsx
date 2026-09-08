@@ -4,6 +4,8 @@ import appIcon from '../../asstes/images/icon.png'
 const navItems = [
   { id: 'manga', label: '追漫' },
   { id: 'books', label: '實體書' },
+  { id: 'cart', label: '購物車' },
+  { id: 'links', label: '外部連結' },
   { id: 'cats', label: '分類' },
   { id: 'settings', label: '設置' },
 ]

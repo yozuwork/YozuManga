@@ -1,0 +1,88 @@
+.template-backdrop {
+  position: fixed;
+  z-index: 60;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(24, 24, 24, 0.42);
+}
+
+.template-modal {
+  position: relative;
+  width: min(460px, 100%);
+  padding: 24px;
+  border: 2.5px solid var(--ink);
+  border-radius: 16px 9px 18px 11px;
+  background: var(--card);
+  box-shadow: 6px 7px 0 var(--ink);
+}
+
+.template-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: grid;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--paper);
+  cursor: pointer;
+  place-items: center;
+}
+
+.template-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 0 38px 22px 0;
+}
+
+.template-heading > svg {
+  width: 24px;
+  height: 24px;
+  margin-top: 2px;
+}
+
+.template-heading h2 {
+  margin: 0 0 3px;
+  font-size: 18px;
+}
+
+.template-heading p {
+  margin: 0;
+  color: var(--gray);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.template-modal .form-field select {
+  width: 100%;
+  padding: 9px 11px;
+  border: 2px solid var(--ink);
+  border-radius: 9px;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.template-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 22px;
+}
+
+.template-actions button {
+  padding: 8px 15px;
+  border: 2px solid var(--ink);
+  border-radius: 9px;
+  background: var(--paper);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.template-actions .primary {
+  background: var(--marker);
+}

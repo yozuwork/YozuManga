@@ -32,11 +32,15 @@ const EMPTY_FORM = {
   relatedWorkKeys: [],
 }
 
-function getInitialForm(manga, readingStatuses) {
+function getInitialForm(manga, readingStatuses, defaultTemplate) {
   if (!manga) {
     return {
       ...EMPTY_FORM,
-      statuses: readingStatuses[0]?.name ? [readingStatuses[0].name] : [],
+      serializationStatus: defaultTemplate?.serializationStatus ?? '連載中',
+      statuses: defaultTemplate?.statuses?.length
+        ? defaultTemplate.statuses
+        : [readingStatuses.find((status) => status.name === '追漫中')?.name
+            ?? readingStatuses[0]?.name].filter(Boolean),
       updateTime: getCurrentLocalDateTime(),
     }
   }
@@ -76,8 +80,9 @@ function MangaModal({
   onClose,
   onSave,
   relatedWorks,
+  defaultTemplate,
 }) {
-  const [form, setForm] = useState(() => getInitialForm(null, readingStatuses))
+  const [form, setForm] = useState(() => getInitialForm(null, readingStatuses, defaultTemplate))
   const [coverHeight, setCoverHeight] = useState(null)
   const [isDragging, setIsDragging] = useState(false)
   const [isResizing, setIsResizing] = useState(false)
@@ -120,7 +125,7 @@ function MangaModal({
   useEffect(() => {
     if (!isOpen) return undefined
 
-    setForm(getInitialForm(manga, readingStatuses))
+    setForm(getInitialForm(manga, readingStatuses, defaultTemplate))
     setIsUpdateTimeEdited(false)
     setCoverHeight(null)
     setIsDragging(false)
@@ -129,7 +134,7 @@ function MangaModal({
 
     const focusFrame = requestAnimationFrame(() => titleInputRef.current?.focus())
     return () => cancelAnimationFrame(focusFrame)
-  }, [isOpen, manga, readingStatuses])
+  }, [defaultTemplate, isOpen, manga, readingStatuses])
 
   useEffect(() => {
     if (!isOpen) return undefined
@@ -137,7 +142,7 @@ function MangaModal({
     function handleKeyDown(event) {
       if (event.key !== 'Escape') return
 
-      setForm(getInitialForm(null, readingStatuses))
+      setForm(getInitialForm(null, readingStatuses, defaultTemplate))
       setIsUpdateTimeEdited(false)
       setCoverHeight(null)
       setIsDragging(false)
@@ -183,7 +188,7 @@ function MangaModal({
       window.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('paste', handlePaste)
     }
-  }, [applyCoverFile, isOpen, onClose, readingStatuses])
+  }, [applyCoverFile, defaultTemplate, isOpen, onClose, readingStatuses])
 
   function handleFieldChange(event) {
     const { name, value } = event.target
@@ -262,7 +267,7 @@ function MangaModal({
   }
 
   function resetAndClose() {
-    setForm(getInitialForm(null, readingStatuses))
+    setForm(getInitialForm(null, readingStatuses, defaultTemplate))
     setIsUpdateTimeEdited(false)
     setCoverHeight(null)
     setIsDragging(false)

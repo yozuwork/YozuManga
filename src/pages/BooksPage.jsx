@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { FiDownload, FiPlus } from 'react-icons/fi'
+import { FiCopy, FiDownload, FiPlus } from 'react-icons/fi'
 import { useDialog } from '../components/common/DialogProvider.jsx'
+import CardTemplateModal from '../components/common/CardTemplateModal.jsx'
 import { ListViewActions, WaterfallStatus } from '../components/common/DisplayModeControl.jsx'
 import Pagination from '../components/common/Pagination.jsx'
 import SelectionToolbar from '../components/common/SelectionToolbar.jsx'
@@ -10,6 +11,7 @@ import BookModal from '../components/books/BookModal.jsx'
 import { notionBookImportCandidates } from '../data/notionBookImport.js'
 import useCardSelection from '../hooks/useCardSelection.js'
 import useListDisplay from '../hooks/useListDisplay.js'
+import { getCardTemplates, saveCardTemplate } from '../utils/cardTemplates.js'
 import './MangaPage.css'
 import './BooksPage.css'
 
@@ -32,6 +34,8 @@ function BooksPage({
   const [editingBook, setEditingBook] = useState(null)
   const [isEditingCards, setIsEditingCards] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
+  const [isTemplateOpen, setIsTemplateOpen] = useState(false)
+  const [cardTemplates, setCardTemplates] = useState(getCardTemplates)
   const didPromptImportRef = useRef(false)
   const { confirm, showMessage } = useDialog()
   const selection = useCardSelection(bookList)
@@ -187,6 +191,16 @@ function BooksPage({
     }
   }
 
+  function saveTemplate(template) {
+    const templates = saveCardTemplate('book', template)
+    setCardTemplates(templates)
+    setIsTemplateOpen(false)
+    showMessage('之後新增實體書時會自動套用這組預設狀態。', {
+      title: '實體書模板已儲存',
+      variant: 'success',
+    })
+  }
+
   return (
     <main className="books-page">
       <div className="filters" aria-label="實體書篩選">
@@ -213,6 +227,11 @@ function BooksPage({
           </button>
         </div>
         <ListViewActions
+          leadingAction={(
+            <button className="template-trigger" type="button" onClick={() => setIsTemplateOpen(true)}>
+              <FiCopy aria-hidden="true" /> 模板
+            </button>
+          )}
           value={display.mode}
           onChange={display.setMode}
           cardSize={display.cardSize}
@@ -268,7 +287,7 @@ function BooksPage({
         {(book) => (
           <BookCard
             book={book}
-            readingStatuses={readingStatuses}
+            readingStatuses={bookStatuses}
             onEdit={openEditModal}
             onDelete={deleteBook}
             selectionMode={selection.isSelecting}
@@ -311,6 +330,15 @@ function BooksPage({
         onClose={closeModal}
         onSave={saveBook}
         relatedWorks={relatedWorks}
+        defaultTemplate={cardTemplates.book}
+      />
+      <CardTemplateModal
+        isOpen={isTemplateOpen}
+        type="book"
+        template={cardTemplates.book}
+        readingStatuses={bookStatuses}
+        onClose={() => setIsTemplateOpen(false)}
+        onSave={saveTemplate}
       />
     </main>
   )

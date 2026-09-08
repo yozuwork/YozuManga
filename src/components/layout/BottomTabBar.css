@@ -22,7 +22,8 @@
     align-items: center;
     flex-direction: column;
     gap: 3px;
-    padding: 5px 8px;
+    min-width: 0;
+    padding: 5px 4px;
     border: 0;
     border-radius: 10px;
     background: none;
@@ -47,5 +48,66 @@
 
   .tab-btn.active svg {
     opacity: 1;
+  }
+
+  .tab-more {
+    position: relative;
+    display: flex;
+    justify-content: center;
+  }
+
+  .tab-more-menu {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 14px);
+    display: flex;
+    width: 150px;
+    padding: 7px;
+    border: 2.5px solid var(--ink);
+    border-radius: 13px 9px 15px 10px;
+    background: var(--card);
+    box-shadow: 3px 4px 0 var(--ink);
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .tab-more-menu::after {
+    position: absolute;
+    right: 19px;
+    bottom: -8px;
+    width: 12px;
+    height: 12px;
+    border-right: 2.5px solid var(--ink);
+    border-bottom: 2.5px solid var(--ink);
+    background: var(--card);
+    content: '';
+    transform: rotate(45deg);
+  }
+
+  .tab-more-item {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 11px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 800;
+    text-align: left;
+  }
+
+  .tab-more-item svg {
+    width: 19px;
+    height: 19px;
+  }
+
+  .tab-more-item.active,
+  .tab-more-item:hover {
+    background: var(--marker-soft);
   }
 }

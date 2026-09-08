@@ -156,7 +156,7 @@ function MangaCard({
             onKeyDown={(event) => event.stopPropagation()}
           >
             <FiCornerUpRight aria-hidden="true" />
-            <span>傳送門：{relatedWork.title}</span>
+            <span>{relatedWork.type === 'book' ? '實體書傳送門' : '追漫傳送門'}</span>
           </button>
         ))}
         {manga.link && (

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { FiPlus } from 'react-icons/fi'
+import { FiCopy, FiPlus } from 'react-icons/fi'
 import { useDialog } from '../components/common/DialogProvider.jsx'
+import CardTemplateModal from '../components/common/CardTemplateModal.jsx'
 import { ListViewActions, WaterfallStatus } from '../components/common/DisplayModeControl.jsx'
 import Pagination from '../components/common/Pagination.jsx'
 import SelectionToolbar from '../components/common/SelectionToolbar.jsx'
@@ -9,6 +10,7 @@ import MangaCard from '../components/manga/MangaCard.jsx'
 import MangaModal from '../components/manga/MangaModal.jsx'
 import useCardSelection from '../hooks/useCardSelection.js'
 import useListDisplay from '../hooks/useListDisplay.js'
+import { getCardTemplates, saveCardTemplate } from '../utils/cardTemplates.js'
 import './MangaPage.css'
 
 function MangaPage({
@@ -28,6 +30,8 @@ function MangaPage({
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingManga, setEditingManga] = useState(null)
   const [isEditingCards, setIsEditingCards] = useState(false)
+  const [isTemplateOpen, setIsTemplateOpen] = useState(false)
+  const [cardTemplates, setCardTemplates] = useState(getCardTemplates)
   const { confirm, showMessage } = useDialog()
   const selection = useCardSelection(mangaList)
 
@@ -157,6 +161,16 @@ function MangaPage({
     }
   }
 
+  function saveTemplate(template) {
+    const templates = saveCardTemplate('manga', template)
+    setCardTemplates(templates)
+    setIsTemplateOpen(false)
+    showMessage('之後新增追漫時會自動套用這組預設狀態。', {
+      title: '追漫模板已儲存',
+      variant: 'success',
+    })
+  }
+
   return (
     <main className="manga-page">
       <div className="filters" aria-label="追漫篩選">
@@ -183,6 +197,11 @@ function MangaPage({
           </button>
         </div>
         <ListViewActions
+          leadingAction={(
+            <button className="template-trigger" type="button" onClick={() => setIsTemplateOpen(true)}>
+              <FiCopy aria-hidden="true" /> 模板
+            </button>
+          )}
           value={display.mode}
           onChange={display.setMode}
           cardSize={display.cardSize}
@@ -221,7 +240,7 @@ function MangaPage({
         {(manga) => (
           <MangaCard
             manga={manga}
-            readingStatuses={readingStatuses}
+            readingStatuses={mangaStatuses}
             onEdit={openEditModal}
             onDelete={deleteManga}
             selectionMode={selection.isSelecting}
@@ -264,6 +283,15 @@ function MangaPage({
         onClose={closeModal}
         onSave={saveManga}
         relatedWorks={relatedWorks}
+        defaultTemplate={cardTemplates.manga}
+      />
+      <CardTemplateModal
+        isOpen={isTemplateOpen}
+        type="manga"
+        template={cardTemplates.manga}
+        readingStatuses={mangaStatuses}
+        onClose={() => setIsTemplateOpen(false)}
+        onSave={saveTemplate}
       />
     </main>
   )

@@ -36,12 +36,14 @@ const EMPTY_FORM = {
   relatedWorkKeys: [],
 }
 
-function getInitialForm(book, readingStatuses) {
+function getInitialForm(book, readingStatuses, defaultTemplate) {
   const fallbackStatus = readingStatuses[0]?.name ?? ''
   if (!book) {
     return {
       ...EMPTY_FORM,
-      statuses: fallbackStatus ? [fallbackStatus] : [],
+      statuses: defaultTemplate?.statuses?.length
+        ? defaultTemplate.statuses
+        : fallbackStatus ? [fallbackStatus] : [],
       updateTime: getCurrentLocalDateTime(),
     }
   }
@@ -82,8 +84,9 @@ function BookModal({
   relatedWorks,
   onClose,
   onSave,
+  defaultTemplate,
 }) {
-  const [form, setForm] = useState(() => getInitialForm(null, readingStatuses))
+  const [form, setForm] = useState(() => getInitialForm(null, readingStatuses, defaultTemplate))
   const [coverHeight, setCoverHeight] = useState(null)
   const [isDragging, setIsDragging] = useState(false)
   const [isResizing, setIsResizing] = useState(false)
@@ -126,7 +129,7 @@ function BookModal({
   useEffect(() => {
     if (!isOpen) return undefined
 
-    setForm(getInitialForm(book, readingStatuses))
+    setForm(getInitialForm(book, readingStatuses, defaultTemplate))
     setIsUpdateTimeEdited(false)
     setCoverHeight(null)
     setIsDragging(false)
@@ -134,13 +137,13 @@ function BookModal({
     setIsCoverFocused(false)
     const focusFrame = requestAnimationFrame(() => titleInputRef.current?.focus())
     return () => cancelAnimationFrame(focusFrame)
-  }, [book, isOpen, readingStatuses])
+  }, [book, defaultTemplate, isOpen, readingStatuses])
 
   useEffect(() => {
     if (!isOpen) return undefined
 
     function resetLocalState() {
-      setForm(getInitialForm(null, readingStatuses))
+      setForm(getInitialForm(null, readingStatuses, defaultTemplate))
       setIsUpdateTimeEdited(false)
       setCoverHeight(null)
       setIsDragging(false)
@@ -186,7 +189,7 @@ function BookModal({
       window.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('paste', handlePaste)
     }
-  }, [applyCoverFile, isOpen, onClose, readingStatuses])
+  }, [applyCoverFile, defaultTemplate, isOpen, onClose, readingStatuses])
 
   function handleFieldChange(event) {
     const { name, value } = event.target
@@ -263,7 +266,7 @@ function BookModal({
   }
 
   function resetAndClose() {
-    setForm(getInitialForm(null, readingStatuses))
+    setForm(getInitialForm(null, readingStatuses, defaultTemplate))
     setIsUpdateTimeEdited(false)
     setCoverHeight(null)
     setIsDragging(false)

@@ -45,9 +45,11 @@ export function ListViewActions({
   onStartSelecting,
   isEditing,
   onToggleEditing,
+  leadingAction,
 }) {
   return (
     <div className="list-view-actions">
+      {leadingAction}
       {onCardSizeChange && <CardSizeControl value={cardSize} onChange={onCardSizeChange} />}
       <DisplayModeControl value={value} onChange={onChange} />
       {onToggleEditing && (

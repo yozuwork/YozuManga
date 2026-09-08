@@ -26,6 +26,20 @@ import {
   updateManga,
 } from '../services/mangaService.js'
 import { addStatus, deleteStatus, getStatuses, updateStatus } from '../services/statusService.js'
+import {
+  addCartItem,
+  deleteCartItem,
+  getCartItems,
+  reorderCartItems,
+  updateCartItem,
+} from '../services/cartService.js'
+import {
+  addExternalLink,
+  deleteExternalLink,
+  getExternalLinks,
+  reorderExternalLinks,
+  updateExternalLink,
+} from '../services/externalLinkService.js'
 
 function replaceById(list, id, data) {
   return list.map((item) => (item.id === id ? { ...item, ...data, id } : item))
@@ -35,6 +49,40 @@ function normalizeTitleKey(value) {
   return value.trim().replace(/\s+/g, ' ').normalize('NFKC').toLocaleLowerCase('zh-TW')
 }
 
+const legacyCartStatuses = {
+  high: '準備購買',
+  medium: '有興趣',
+  low: '先收藏',
+}
+
+function getItemStatuses(item, type) {
+  if (item.statuses?.length) return item.statuses
+  if (item.status) return [item.status]
+  if (type === 'cart') return [legacyCartStatuses[item.priority] ?? '有興趣']
+  return []
+}
+
+function replaceItemStatus(item, type, oldName, newName) {
+  const statuses = getItemStatuses(item, type)
+    .map((name) => (name === oldName ? newName : name))
+    .filter(Boolean)
+  return {
+    status: statuses[0] ?? '',
+    statuses,
+    ...(type === 'link' ? { tags: statuses } : {}),
+  }
+}
+
+function removeItemStatus(item, type, oldName, fallbackName) {
+  const statuses = getItemStatuses(item, type).filter((name) => name !== oldName)
+  if (!statuses.length && fallbackName) statuses.push(fallbackName)
+  return {
+    status: statuses[0] ?? '',
+    statuses,
+    ...(type === 'link' ? { tags: statuses } : {}),
+  }
+}
+
 export default function useLibraryData() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -42,6 +90,10 @@ export default function useLibraryData() {
   const [bookList, setBookList] = useState([])
   const [categories, setCategories] = useState([])
   const [readingStatuses, setReadingStatuses] = useState([])
+  const [cartItems, setCartItems] = useState([])
+  const [cartError, setCartError] = useState(null)
+  const [externalLinks, setExternalLinks] = useState([])
+  const [externalLinksError, setExternalLinksError] = useState(null)
   const inFlightRef = useRef(null)
 
   const loadData = useCallback(async () => {
@@ -49,12 +101,31 @@ export default function useLibraryData() {
 
     setLoading(true)
     setError(null)
-    const request = Promise.all([getMangas(), getBooks(), getCategories(), getStatuses()])
-      .then(([mangas, books, categoryList, statuses]) => {
+    setCartError(null)
+    setExternalLinksError(null)
+    const cartRequest = getCartItems().catch((loadError) => {
+      setCartError(loadError)
+      return []
+    })
+    const externalLinksRequest = getExternalLinks().catch((loadError) => {
+      setExternalLinksError(loadError)
+      return []
+    })
+    const request = Promise.all([
+      getMangas(),
+      getBooks(),
+      getCategories(),
+      getStatuses(),
+      cartRequest,
+      externalLinksRequest,
+    ])
+      .then(([mangas, books, categoryList, statuses, shoppingCart, links]) => {
         setMangaList(mangas)
         setBookList(books)
         setCategories(categoryList)
         setReadingStatuses(statuses)
+        setCartItems(shoppingCart)
+        setExternalLinks(links)
       })
       .catch((loadError) => {
         setError(loadError)
@@ -169,6 +240,62 @@ export default function useLibraryData() {
     }
   }, [bookList])
 
+  const createCartItem = useCallback(async (data) => {
+    const created = await addCartItem({ ...data, sortOrder: -Date.now() })
+    setCartItems((list) => [created, ...list])
+    return created
+  }, [])
+
+  const editCartItem = useCallback(async (id, data) => {
+    await updateCartItem(id, data)
+    setCartItems((list) => replaceById(list, id, data))
+  }, [])
+
+  const removeCartItem = useCallback(async (id) => {
+    await deleteCartItem(id)
+    setCartItems((list) => list.filter((item) => item.id !== id))
+  }, [])
+
+  const reorderCartList = useCallback(async (items) => {
+    const previous = cartItems
+    const orderedItems = items.map((item, index) => ({ ...item, sortOrder: index }))
+    setCartItems(orderedItems)
+    try {
+      await reorderCartItems(orderedItems.map((item) => item.id))
+    } catch (error) {
+      setCartItems(previous)
+      throw error
+    }
+  }, [cartItems])
+
+  const createExternalLink = useCallback(async (data) => {
+    const created = await addExternalLink({ ...data, sortOrder: -Date.now() })
+    setExternalLinks((list) => [created, ...list])
+    return created
+  }, [])
+
+  const editExternalLink = useCallback(async (id, data) => {
+    await updateExternalLink(id, data)
+    setExternalLinks((list) => replaceById(list, id, data))
+  }, [])
+
+  const removeExternalLink = useCallback(async (id) => {
+    await deleteExternalLink(id)
+    setExternalLinks((list) => list.filter((item) => item.id !== id))
+  }, [])
+
+  const reorderExternalLinkList = useCallback(async (items) => {
+    const previous = externalLinks
+    const orderedItems = items.map((item, index) => ({ ...item, sortOrder: index }))
+    setExternalLinks(orderedItems)
+    try {
+      await reorderExternalLinks(orderedItems.map((item) => item.id))
+    } catch (error) {
+      setExternalLinks(previous)
+      throw error
+    }
+  }, [externalLinks])
+
   const createCategory = useCallback(async (data) => {
     const created = await addCategory({ ...data, sortOrder: Date.now() })
     setCategories((list) => [...list, created])
@@ -209,49 +336,94 @@ export default function useLibraryData() {
     return created
   }, [])
 
-  const editStatus = useCallback(async (id, data) => {
-    await updateStatus(id, data)
-    setReadingStatuses((list) => replaceById(list, id, data))
-  }, [])
-
-  const removeStatus = useCallback(async (id) => {
+  const editStatus = useCallback(async (id, data, scopeType) => {
     const status = readingStatuses.find((item) => item.id === id)
-    if (!status || readingStatuses.length <= 1) return false
+    if (!status) return false
+    const nextName = data.name?.trim() || status.name
+    const nextData = { ...data, name: nextName }
+    const statusTypes = status.types ?? []
 
-    const remaining = readingStatuses.filter((item) => item.id !== id)
-    const mangaFallback = remaining.find((item) => item.types.includes('manga')) ?? remaining[0]
-    const bookFallback = remaining.find((item) => item.types.includes('book')) ?? remaining[0]
-    const hasStatus = (item) => (
-      item.statuses?.length ? item.statuses : [item.status]
-    ).includes(status.name)
-    const nextStatusData = (item, fallback) => {
-      const statuses = (item.statuses?.length ? item.statuses : [item.status])
-        .filter((name) => name && name !== status.name)
-      if (!statuses.length) statuses.push(fallback.name)
-      return { status: statuses[0], statuses }
+    if (scopeType && statusTypes.length > 1) {
+      const created = await addStatus({ ...status, ...nextData, types: [scopeType] })
+      await updateStatus(id, { types: statusTypes.filter((type) => type !== scopeType) })
+      setReadingStatuses((list) => [
+        ...list.map((item) => item.id === id
+          ? { ...item, types: item.types.filter((type) => type !== scopeType) }
+          : item),
+        created,
+      ])
+    } else {
+      await updateStatus(id, nextData)
+      setReadingStatuses((list) => replaceById(list, id, nextData))
     }
-    const affectedMangas = mangaList.filter(hasStatus)
-    const affectedBooks = bookList.filter(hasStatus)
 
-    await Promise.all([
-      ...affectedMangas.map((item) => updateManga(item.id, nextStatusData(item, mangaFallback))),
-      ...affectedBooks.map((item) => updateBook(item.id, nextStatusData(item, bookFallback))),
-    ])
-    await deleteStatus(id)
+    if (nextName === status.name) return true
+    const targetTypes = scopeType ? [scopeType] : statusTypes
+    const typeConfigs = {
+      manga: [mangaList, updateManga, setMangaList],
+      book: [bookList, updateBook, setBookList],
+      cart: [cartItems, updateCartItem, setCartItems],
+      link: [externalLinks, updateExternalLink, setExternalLinks],
+    }
 
-    setReadingStatuses(remaining)
-    setMangaList((list) =>
-      list.map((item) =>
-        hasStatus(item) ? { ...item, ...nextStatusData(item, mangaFallback) } : item,
-      ),
-    )
-    setBookList((list) =>
-      list.map((item) =>
-        hasStatus(item) ? { ...item, ...nextStatusData(item, bookFallback) } : item,
-      ),
-    )
+    await Promise.all(targetTypes.flatMap((type) => {
+      const [items, updater] = typeConfigs[type] ?? [[], null]
+      if (!updater) return []
+      return items
+        .filter((item) => getItemStatuses(item, type).includes(status.name))
+        .map((item) => updater(item.id, replaceItemStatus(item, type, status.name, nextName)))
+    }))
+    targetTypes.forEach((type) => {
+      const [, , setter] = typeConfigs[type] ?? []
+      setter?.((items) => items.map((item) =>
+        getItemStatuses(item, type).includes(status.name)
+          ? { ...item, ...replaceItemStatus(item, type, status.name, nextName) }
+          : item))
+    })
     return true
-  }, [bookList, mangaList, readingStatuses])
+  }, [bookList, cartItems, externalLinks, mangaList, readingStatuses])
+
+  const removeStatus = useCallback(async (id, scopeType) => {
+    const status = readingStatuses.find((item) => item.id === id)
+    if (!status) return false
+    const targetType = scopeType ?? status.types?.[0]
+    const fallback = readingStatuses.find((item) =>
+      item.id !== id && item.types?.includes(targetType))
+    if (!fallback) return false
+
+    const typeConfigs = {
+      manga: [mangaList, updateManga, setMangaList],
+      book: [bookList, updateBook, setBookList],
+      cart: [cartItems, updateCartItem, setCartItems],
+      link: [externalLinks, updateExternalLink, setExternalLinks],
+    }
+    const [items, updater, setter] = typeConfigs[targetType] ?? [[], null, null]
+    const affectedItems = items.filter((item) =>
+      getItemStatuses(item, targetType).includes(status.name))
+
+    if (updater) {
+      await Promise.all(affectedItems.map((item) => updater(
+        item.id,
+        removeItemStatus(item, targetType, status.name, fallback.name),
+      )))
+    }
+
+    if ((status.types?.length ?? 0) > 1 && scopeType) {
+      const nextTypes = status.types.filter((type) => type !== scopeType)
+      await updateStatus(id, { types: nextTypes })
+      setReadingStatuses((list) => list.map((item) =>
+        item.id === id ? { ...item, types: nextTypes } : item))
+    } else {
+      await deleteStatus(id)
+      setReadingStatuses((list) => list.filter((item) => item.id !== id))
+    }
+
+    setter?.((list) => list.map((item) =>
+      getItemStatuses(item, targetType).includes(status.name)
+        ? { ...item, ...removeItemStatus(item, targetType, status.name, fallback.name) }
+        : item))
+    return true
+  }, [bookList, cartItems, externalLinks, mangaList, readingStatuses])
 
   return {
     loading,
@@ -260,6 +432,10 @@ export default function useLibraryData() {
     bookList,
     categories,
     readingStatuses,
+    cartItems,
+    cartError,
+    externalLinks,
+    externalLinksError,
     loadData,
     createManga,
     editManga,
@@ -272,6 +448,14 @@ export default function useLibraryData() {
     removeBook,
     removeBooks,
     reorderBookList,
+    createCartItem,
+    editCartItem,
+    removeCartItem,
+    reorderCartList,
+    createExternalLink,
+    editExternalLink,
+    removeExternalLink,
+    reorderExternalLinkList,
     createCategory,
     editCategory,
     removeCategory,

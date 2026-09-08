@@ -31,6 +31,43 @@
   font-weight: 600;
 }
 
+.settings-select-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding-top: 14px;
+  border-top: 2px dashed rgba(24, 24, 24, 0.25);
+}
+
+.settings-select-row span {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.settings-select-row strong {
+  font-size: 13px;
+}
+
+.settings-select-row small {
+  color: var(--gray);
+  font-size: 10.5px;
+  font-weight: 650;
+}
+
+.settings-select-row select {
+  min-width: 110px;
+  padding: 8px 30px 8px 11px;
+  border: 2px solid var(--ink);
+  border-radius: 10px 7px 11px 8px;
+  background: var(--paper);
+  color: var(--ink);
+  cursor: pointer;
+  font-weight: 800;
+}
+
 .cat-list {
   display: flex;
   flex-wrap: wrap;
@@ -182,4 +219,60 @@
   .cat-section {
     padding: 16px 16px 18px;
   }
+
+  .settings-select-row {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+.editable-status {
+  min-width: 170px;
+}
+
+.status-name-input {
+  width: 110px;
+  min-width: 0;
+  padding: 2px 4px;
+  border: 0;
+  border-bottom: 1.5px dashed transparent;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.status-name-input:focus {
+  border-bottom-color: var(--ink);
+  background: rgba(255, 253, 247, 0.55);
+}
+
+.editable-status .remove-btn {
+  margin-left: auto;
+}
+
+.status-area-section .cat-list {
+  min-height: 42px;
+}
+
+.empty-status-hint {
+  align-self: center;
+  color: var(--gray);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.scoped-add-row input {
+  min-width: 200px;
+}
+
+.create-default-tags {
+  justify-self: center;
+  padding: 9px 16px;
+  border: 2px dashed var(--ink);
+  border-radius: 10px;
+  background: var(--marker-soft);
+  cursor: pointer;
+  font-weight: 900;
 }
