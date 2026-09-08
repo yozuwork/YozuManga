@@ -18,6 +18,7 @@ function MangaCard({
 }) {
   const coverPosition = useCoverPositionDrag(manga, onUpdateCoverPosition, editMode)
   const mangaStatuses = manga.statuses?.length ? manga.statuses : [manga.status].filter(Boolean)
+  const mangaLinks = manga.links?.length ? manga.links : manga.link ? [manga.link] : []
   const serializationStatus = manga.serializationStatus
     ?? (mangaStatuses.includes('已完結') ? '已完結' : '連載中')
   const totalLabel = manga.total
@@ -159,17 +160,23 @@ function MangaCard({
             <span>{relatedWork.type === 'book' ? '實體書傳送門' : '追漫傳送門'}</span>
           </button>
         ))}
-        {manga.link && (
-          <a
-            className="read-link-btn"
-            href={manga.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(event) => event.stopPropagation()}
-            onKeyDown={(event) => event.stopPropagation()}
-          >
-            <FiPlay aria-hidden="true" /> 閱讀漫畫
-          </a>
+        {mangaLinks.length > 0 && (
+          <div className="read-links">
+            {mangaLinks.map((link, index) => (
+              <a
+                className="read-link-btn"
+                href={link}
+                target="_blank"
+                rel="noopener noreferrer"
+                key={`${link}-${index}`}
+                onClick={(event) => event.stopPropagation()}
+                onKeyDown={(event) => event.stopPropagation()}
+              >
+                <FiPlay aria-hidden="true" />
+                {mangaLinks.length > 1 ? `作品連結 ${index + 1}` : '閱讀漫畫'}
+              </a>
+            ))}
+          </div>
         )}
         <div className="card-progress-block">
           <div className="prow">

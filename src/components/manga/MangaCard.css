@@ -282,7 +282,18 @@
   background: #e0b93a;
 }
 
-.read-link-btn + .card-progress-block {
+.read-links {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: auto;
+}
+
+.read-links .read-link-btn {
+  margin-top: 0;
+}
+
+.read-links + .card-progress-block {
   margin-top: 10px;
 }
 
@@ -456,7 +467,11 @@
     font-size: 8px;
   }
 
-  .read-link-btn + .card-progress-block {
+  .read-links {
+    gap: 4px;
+  }
+
+  .read-links + .card-progress-block {
     margin-top: 5px;
   }
 

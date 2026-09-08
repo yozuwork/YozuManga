@@ -12,6 +12,141 @@
   resize: vertical;
 }
 
+.cart-volume-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cart-volume-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-field .cart-volume-row input {
+  width: auto;
+  min-width: 0;
+  flex: 1;
+}
+
+.cart-volume-remove {
+  display: flex;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 2px solid var(--ink);
+  border-radius: 9px;
+  background: #f5d5d1;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.cart-volume-add {
+  margin-top: 8px;
+  padding: 7px 11px;
+  border: 2px dashed var(--ink);
+  border-radius: 9px;
+  background: var(--marker-soft);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.cart-volume-add:hover {
+  background: var(--marker);
+}
+
+.cart-link-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cart-link-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-field .cart-link-row input {
+  width: auto;
+  min-width: 0;
+  flex: 1;
+}
+
+.cart-link-action {
+  display: flex;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 2px solid var(--ink);
+  border-radius: 10px 8px 11px 9px;
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 17px;
+}
+
+.cart-link-action.add {
+  background: var(--marker);
+}
+
+.cart-link-action.remove {
+  background: #f5d5d1;
+}
+
+.cart-link-action:hover {
+  transform: translateY(-1px);
+}
+
+.cart-purchase-state {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border: 2px dashed var(--ink);
+  border-radius: 10px 8px 12px 9px;
+  background: var(--marker-soft);
+}
+
+.cart-purchased-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.cart-purchased-check input {
+  width: 19px;
+  height: 19px;
+  margin: 0;
+  accent-color: var(--marker);
+}
+
+.cart-purchase-state .cart-purchased-date {
+  min-width: 0;
+  flex: 1;
+  margin: 0;
+}
+
+@media (max-width: 480px) {
+  .cart-purchase-state {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
 @media (max-width: 640px) {
   .cart-modal-inner {
     min-height: calc(100% - 120px);

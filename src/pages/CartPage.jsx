@@ -23,6 +23,7 @@ function getCartStatuses(item) {
 
 function matchesFilter(item, filter) {
   if (filter === 'all') return true
+  if (filter === 'purchased') return item.purchased
   if (filter === 'physical') return ['physical', 'either'].includes(item.format)
   if (filter === 'digital') return ['digital', 'either'].includes(item.format)
   if (filter.startsWith('status:')) return getCartStatuses(item).includes(filter.slice(7))
@@ -61,6 +62,7 @@ function CartPage({
     { id: 'physical', label: '實體書' },
     { id: 'digital', label: '電子書' },
     ...cartStatuses.map((status) => ({ id: `status:${status.name}`, label: status.name })),
+    { id: 'purchased', label: '已購買' },
   ]
 
   useEffect(() => {
@@ -74,6 +76,7 @@ function CartPage({
       item.title,
       item.author,
       item.volumeNote,
+      ...(item.purchaseVolumes ?? []),
       item.note,
       ...linkedTitles,
     ].filter(Boolean).join(' ').toLocaleLowerCase('zh-Hant')

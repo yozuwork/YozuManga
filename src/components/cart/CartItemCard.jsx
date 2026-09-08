@@ -1,6 +1,9 @@
 import {
+  FiCalendar,
+  FiCheckCircle,
   FiCornerUpRight,
   FiEdit3,
+  FiExternalLink,
   FiHeart,
   FiMove,
   FiTrash2,
@@ -12,6 +15,34 @@ const formatLabels = {
   physical: '實體書',
   digital: '電子書',
   either: '實體／電子皆可',
+}
+
+const chineseDigits = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九']
+
+function numberToChinese(number) {
+  if (number < 10) return chineseDigits[number]
+  if (number < 20) return `十${number % 10 ? chineseDigits[number % 10] : ''}`
+  if (number < 100) {
+    return `${chineseDigits[Math.floor(number / 10)]}十${number % 10 ? chineseDigits[number % 10] : ''}`
+  }
+  if (number < 1000) {
+    const remainder = number % 100
+    return `${chineseDigits[Math.floor(number / 100)]}百${
+      remainder ? `${remainder < 10 ? '零' : ''}${numberToChinese(remainder)}` : ''
+    }`
+  }
+  return String(number)
+}
+
+function getVolumeLabel(value) {
+  const text = String(value).trim()
+  if (/^\d+$/.test(text)) return `第${numberToChinese(Number(text))}卷`
+  return text
+}
+
+function formatPurchasedDate(value) {
+  if (!value) return ''
+  return value.replace(/-/g, '/')
 }
 
 const legacyPriorityLabels = {
@@ -35,6 +66,14 @@ function CartItemCard({
       (work) => work.id === relation.id && work.type === relation.type,
     ) ?? relation)
   const linkedCover = linkedWorks.find((work) => work.coverUrl)?.coverUrl
+  const purchaseVolumes = item.purchaseVolumes?.length
+    ? item.purchaseVolumes
+    : item.volumeNote
+      ? item.volumeNote.split(/[,，、]/).map((value) => value.trim()).filter(Boolean)
+      : []
+  const sourceUrls = item.sourceUrls?.length
+    ? item.sourceUrls
+    : item.sourceUrl ? [item.sourceUrl] : []
   const coverUrl = item.coverUrl || linkedCover
   const coverPosition = useCoverPositionDrag(
     { ...item, coverUrl, coverFit: item.coverFit ?? 'cover' },
@@ -62,7 +101,7 @@ function CartItemCard({
 
   return (
     <article
-      className="sticky cart-card"
+      className={item.purchased ? 'sticky cart-card purchased' : 'sticky cart-card'}
       role="button"
       tabIndex="0"
       onClick={handleCardClick}
@@ -122,6 +161,11 @@ function CartItemCard({
               {status}
             </span>
           ))}
+          {item.purchased && (
+            <span className="tag mint cart-purchased-tag">
+              <FiCheckCircle aria-hidden="true" /> 已購買
+            </span>
+          )}
         </div>
       </div>
       <div className="info cart-info">
@@ -129,8 +173,15 @@ function CartItemCard({
         {item.author && <div className="author-line icon-label"><FiEdit3 aria-hidden="true" /> {item.author}</div>}
         <div className="cart-badges">
           <span><FiHeart aria-hidden="true" /> {formatLabels[item.format] ?? formatLabels.physical}</span>
-          {item.volumeNote && <span>{item.volumeNote}</span>}
+          {purchaseVolumes.map((volume, index) => (
+            <span key={`${volume}-${index}`}>{getVolumeLabel(volume)}</span>
+          ))}
         </div>
+        {item.purchased && item.purchasedDate && (
+          <div className="cart-purchased-date-line icon-label">
+            <FiCalendar aria-hidden="true" /> 購買日期 {formatPurchasedDate(item.purchasedDate)}
+          </div>
+        )}
         {item.note && <p className="cart-note">{item.note}</p>}
         <div className="cart-card-actions">
           {linkedWorks.map((work) => (
@@ -147,6 +198,19 @@ function CartItemCard({
               <FiCornerUpRight aria-hidden="true" />
               <span>{work.type === 'book' ? '實體書傳送門' : '追漫傳送門'}</span>
             </button>
+          ))}
+          {sourceUrls.map((sourceUrl, index) => (
+            <a
+              className="cart-source-link"
+              href={sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              key={`${sourceUrl}-${index}`}
+              onClick={(event) => event.stopPropagation()}
+            >
+              <FiExternalLink aria-hidden="true" />
+              {sourceUrls.length > 1 ? `作品連結 ${index + 1}` : '作品連結'}
+            </a>
           ))}
         </div>
       </div>

@@ -6,11 +6,13 @@ import {
   FiImage,
   FiMaximize,
   FiMove,
+  FiPlus,
   FiX,
 } from 'react-icons/fi'
 import MultiSelectTags from '../common/MultiSelectTags.jsx'
 import { useDialog } from '../common/DialogProvider.jsx'
 import { compressCoverImage } from '../../utils/compressCoverImage.js'
+import { getCurrentLocalDateTime } from '../../utils/dateTime.js'
 import '../manga/MangaModal.css'
 import './CartItemModal.css'
 
@@ -18,9 +20,12 @@ const EMPTY_FORM = {
   title: '',
   author: '',
   format: 'physical',
-  volumeNote: '',
+  purchaseVolumes: [''],
   statuses: [],
+  purchased: false,
+  purchasedDate: '',
   note: '',
+  sourceUrls: [''],
   coverUrl: '',
   coverPosX: 50,
   coverPosY: 50,
@@ -34,11 +39,20 @@ function getInitialForm(item, defaultTemplate) {
     title: item.title ?? '',
     author: item.author ?? '',
     format: item.format ?? 'physical',
-    volumeNote: item.volumeNote ?? '',
+    purchaseVolumes: item.purchaseVolumes?.length
+      ? item.purchaseVolumes.map(String)
+      : item.volumeNote
+        ? item.volumeNote.split(/[,，、]/).map((value) => value.trim()).filter(Boolean)
+        : [''],
     statuses: item.statuses?.length
       ? item.statuses
       : item.status ? [item.status] : [{ high: '準備購買', medium: '有興趣', low: '先收藏' }[item.priority] ?? '有興趣'],
+    purchased: Boolean(item.purchased),
+    purchasedDate: item.purchasedDate ?? (item.purchased ? getCurrentLocalDateTime().slice(0, 10) : ''),
     note: item.note ?? '',
+    sourceUrls: item.sourceUrls?.length
+      ? item.sourceUrls
+      : item.sourceUrl ? [item.sourceUrl] : [''],
     coverUrl: item.coverUrl ?? '',
     coverPosX: item.coverPosX ?? 50,
     coverPosY: item.coverPosY ?? 50,
@@ -206,7 +220,60 @@ function CartItemModal({
 
   function handleChange(event) {
     const { name, value, checked, type } = event.target
+    if (name === 'purchased') {
+      setForm((current) => ({
+        ...current,
+        purchased: checked,
+        purchasedDate: checked
+          ? current.purchasedDate || getCurrentLocalDateTime().slice(0, 10)
+          : '',
+      }))
+      return
+    }
     setForm((current) => ({ ...current, [name]: type === 'checkbox' ? checked : value }))
+  }
+
+  function updatePurchaseVolume(index, value) {
+    setForm((current) => ({
+      ...current,
+      purchaseVolumes: current.purchaseVolumes.map((volume, volumeIndex) =>
+        volumeIndex === index ? value : volume,
+      ),
+    }))
+  }
+
+  function addPurchaseVolume() {
+    setForm((current) => ({
+      ...current,
+      purchaseVolumes: [...current.purchaseVolumes, ''],
+    }))
+  }
+
+  function removePurchaseVolume(index) {
+    setForm((current) => ({
+      ...current,
+      purchaseVolumes: current.purchaseVolumes.length === 1
+        ? ['']
+        : current.purchaseVolumes.filter((_, volumeIndex) => volumeIndex !== index),
+    }))
+  }
+
+  function updateSourceUrl(index, value) {
+    setForm((current) => ({
+      ...current,
+      sourceUrls: current.sourceUrls.map((url, urlIndex) => urlIndex === index ? value : url),
+    }))
+  }
+
+  function addSourceUrl() {
+    setForm((current) => ({ ...current, sourceUrls: [...current.sourceUrls, ''] }))
+  }
+
+  function removeSourceUrl(index) {
+    setForm((current) => ({
+      ...current,
+      sourceUrls: current.sourceUrls.filter((_, urlIndex) => urlIndex !== index),
+    }))
   }
 
   function handleSubmit(event) {
@@ -222,14 +289,22 @@ function CartItemModal({
       .filter(Boolean)
       .map((work) => ({ id: work.id, type: work.type, title: work.title }))
 
+    const purchaseVolumes = form.purchaseVolumes.map((value) => value.trim()).filter(Boolean)
+    const sourceUrls = form.sourceUrls.map((value) => value.trim()).filter(Boolean)
+
     onSave({
       title,
       author: form.author.trim(),
       format: form.format,
-      volumeNote: form.volumeNote.trim(),
+      purchaseVolumes,
+      volumeNote: purchaseVolumes.join('、'),
       status: form.statuses?.[0] ?? '',
       statuses: form.statuses ?? [],
+      purchased: form.purchased,
+      purchasedDate: form.purchased ? form.purchasedDate : '',
       note: form.note.trim(),
+      sourceUrls,
+      sourceUrl: sourceUrls[0] ?? '',
       coverUrl: form.coverUrl.trim(),
       coverPosX: form.coverPosX,
       coverPosY: form.coverPosY,
@@ -351,11 +426,35 @@ function CartItemModal({
               </div>
             </div>
 
-            <div className="form-row">
-              <div className="form-field">
-                <label htmlFor="cart-volume">感興趣的冊數／範圍</label>
-                <input id="cart-volume" name="volumeNote" value={form.volumeNote} placeholder="例如：全套、1–5 冊、最新一集" onChange={handleChange} />
+            <div className="form-field">
+              <label htmlFor="cart-volume-0">購物卷集</label>
+              <div className="cart-volume-list">
+                {form.purchaseVolumes.map((volume, index) => (
+                  <div className="cart-volume-row" key={index}>
+                    <input
+                      id={`cart-volume-${index}`}
+                      value={volume}
+                      inputMode="numeric"
+                      placeholder={index === 0 ? '例如：4' : `第 ${index + 1} 個卷集`}
+                      aria-label={`購物卷集 ${index + 1}`}
+                      onChange={(event) => updatePurchaseVolume(index, event.target.value)}
+                    />
+                    {form.purchaseVolumes.length > 1 && (
+                      <button
+                        className="cart-volume-remove"
+                        type="button"
+                        aria-label={`移除第 ${index + 1} 個卷集`}
+                        onClick={() => removePurchaseVolume(index)}
+                      >
+                        <FiX aria-hidden="true" />
+                      </button>
+                    )}
+                  </div>
+                ))}
               </div>
+              <button className="cart-volume-add button-with-icon" type="button" onClick={addPurchaseVolume}>
+                <FiPlus aria-hidden="true" /> 新增卷集
+              </button>
             </div>
 
             <div className="form-field">
@@ -373,6 +472,31 @@ function CartItemModal({
               />
             </div>
 
+            <div className="cart-purchase-state">
+              <label className="cart-purchased-check" htmlFor="cart-purchased">
+                <input
+                  id="cart-purchased"
+                  name="purchased"
+                  type="checkbox"
+                  checked={form.purchased}
+                  onChange={handleChange}
+                />
+                <span>已購買</span>
+              </label>
+              {form.purchased && (
+                <div className="form-field cart-purchased-date">
+                  <label htmlFor="cart-purchased-date">購買日期</label>
+                  <input
+                    id="cart-purchased-date"
+                    name="purchasedDate"
+                    type="date"
+                    value={form.purchasedDate}
+                    onChange={handleChange}
+                  />
+                </div>
+              )}
+            </div>
+
             <div className="form-field">
               <label htmlFor="cart-related">關聯實體書／電子書</label>
               <MultiSelectTags
@@ -382,6 +506,45 @@ function CartItemModal({
                 placeholder="輸入書名搜尋並建立關聯…"
                 onChange={(relatedWorkKeys) => setForm((current) => ({ ...current, relatedWorkKeys }))}
               />
+            </div>
+
+            <div className="form-field">
+              <label htmlFor="cart-source-url-0">作品連結（選填）</label>
+              <div className="cart-link-list">
+                {form.sourceUrls.map((url, index) => (
+                  <div className="cart-link-row" key={index}>
+                    <input
+                      id={`cart-source-url-${index}`}
+                      type="url"
+                      value={url}
+                      placeholder="https://…"
+                      aria-label={`作品連結 ${index + 1}`}
+                      onChange={(event) => updateSourceUrl(index, event.target.value)}
+                    />
+                    {index === 0 ? (
+                      <button
+                        className="cart-link-action add"
+                        type="button"
+                        title="新增作品連結"
+                        aria-label="新增作品連結"
+                        onClick={addSourceUrl}
+                      >
+                        <FiPlus aria-hidden="true" />
+                      </button>
+                    ) : (
+                      <button
+                        className="cart-link-action remove"
+                        type="button"
+                        title="刪除這個作品連結"
+                        aria-label={`刪除作品連結 ${index + 1}`}
+                        onClick={() => removeSourceUrl(index)}
+                      >
+                        <FiX aria-hidden="true" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="form-field">

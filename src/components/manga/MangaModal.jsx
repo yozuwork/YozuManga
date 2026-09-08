@@ -5,6 +5,7 @@ import {
   FiImage,
   FiMaximize,
   FiMove,
+  FiPlus,
   FiTag,
   FiX,
 } from 'react-icons/fi'
@@ -23,7 +24,7 @@ const EMPTY_FORM = {
   current: '',
   total: '',
   serializationStatus: '連載中',
-  link: '',
+  links: [''],
   statuses: [],
   coverUrl: '',
   coverPosX: 50,
@@ -58,7 +59,7 @@ function getInitialForm(manga, readingStatuses, defaultTemplate) {
     total: manga.total ?? '',
     serializationStatus: manga.serializationStatus
       ?? ((manga.statuses ?? [manga.status]).includes('已完結') ? '已完結' : '連載中'),
-    link: manga.link ?? '',
+    links: manga.links?.length ? manga.links : manga.link ? [manga.link] : [''],
     statuses: (manga.statuses?.length ? manga.statuses : manga.status ? [manga.status] : [])
       .filter((name) => readingStatuses.some((status) => status.name === name)),
     coverUrl: manga.coverUrl ?? '',
@@ -196,6 +197,24 @@ function MangaModal({
     setForm((currentForm) => ({ ...currentForm, [name]: value }))
   }
 
+  function updateLink(index, value) {
+    setForm((currentForm) => ({
+      ...currentForm,
+      links: currentForm.links.map((link, linkIndex) => linkIndex === index ? value : link),
+    }))
+  }
+
+  function addLink() {
+    setForm((currentForm) => ({ ...currentForm, links: [...currentForm.links, ''] }))
+  }
+
+  function removeLink(index) {
+    setForm((currentForm) => ({
+      ...currentForm,
+      links: currentForm.links.filter((_, linkIndex) => linkIndex !== index),
+    }))
+  }
+
   async function handleFileChange(event) {
     const file = event.target.files?.[0]
     if (!file) return
@@ -297,6 +316,8 @@ function MangaModal({
       .filter(Boolean)
       .map((work) => ({ id: work.id, type: work.type, title: work.title }))
 
+    const links = form.links.map((value) => value.trim()).filter(Boolean)
+
     onSave({
       title,
       originalTitle: form.originalTitle.trim(),
@@ -308,7 +329,8 @@ function MangaModal({
       current: Number.parseInt(form.current, 10) || 0,
       total: form.total === '' ? null : Number.parseInt(form.total, 10) || 0,
       serializationStatus: form.serializationStatus,
-      link: form.link.trim(),
+      links,
+      link: links[0] ?? '',
       status: form.statuses[0] ?? '',
       statuses: form.statuses,
       coverUrl: form.coverUrl,
@@ -507,15 +529,42 @@ function MangaModal({
             </div>
 
             <div className="form-field">
-              <label htmlFor="manga-link">作品連結（選填）</label>
-              <input
-                id="manga-link"
-                name="link"
-                type="url"
-                value={form.link}
-                placeholder="https://…"
-                onChange={handleFieldChange}
-              />
+              <label htmlFor="manga-link-0">作品連結（選填）</label>
+              <div className="work-link-list">
+                {form.links.map((link, index) => (
+                  <div className="work-link-row" key={index}>
+                    <input
+                      id={`manga-link-${index}`}
+                      type="url"
+                      value={link}
+                      placeholder="https://…"
+                      aria-label={`作品連結 ${index + 1}`}
+                      onChange={(event) => updateLink(index, event.target.value)}
+                    />
+                    {index === 0 ? (
+                      <button
+                        className="work-link-action add"
+                        type="button"
+                        title="新增作品連結"
+                        aria-label="新增作品連結"
+                        onClick={addLink}
+                      >
+                        <FiPlus aria-hidden="true" />
+                      </button>
+                    ) : (
+                      <button
+                        className="work-link-action remove"
+                        type="button"
+                        title="刪除這個作品連結"
+                        aria-label={`刪除作品連結 ${index + 1}`}
+                        onClick={() => removeLink(index)}
+                      >
+                        <FiX aria-hidden="true" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="form-field">
