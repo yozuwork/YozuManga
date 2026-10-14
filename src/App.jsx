@@ -10,6 +10,7 @@ import ExternalLinksPage from './pages/ExternalLinksPage.jsx'
 import CategoriesPage from './pages/CategoriesPage.jsx'
 import MangaPage from './pages/MangaPage.jsx'
 import SettingsPage from './pages/SettingsPage.jsx'
+import SecondhandPage from './pages/SecondhandPage.jsx'
 import { logout } from './services/authService.js'
 import { seedInitialData } from './services/seedService.js'
 import './App.css'
@@ -114,6 +115,8 @@ function App({ user }) {
         onReorderLinks={library.reorderExternalLinkList}
       />
     )
+  } else if (activeView === 'secondhand') {
+    page = <SecondhandPage />
   } else if (activeView === 'cart') {
     page = (
       <CartPage

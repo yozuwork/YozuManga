@@ -10,7 +10,7 @@ export const statusColorHex = {
 }
 
 export const initialReadingStatuses = [
-  { name: '追漫中', color: 'marker', types: ['manga'] },
+  { name: '追漫中', color: 'marker', types: ['manga'], isDefault: true },
   { name: '連載中', color: 'marker', types: ['manga', 'book'] },
   { name: '快追上了', color: 'mint', types: ['manga', 'book'] },
   { name: '已完結', color: 'pink', types: ['manga', 'book'] },

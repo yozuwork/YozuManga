@@ -1,0 +1,113 @@
+.secondhand-page {
+  margin: 24px 34px 48px;
+}
+
+.secondhand-tabs {
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.secondhand-tab {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 58px;
+  padding: 14px 26px;
+  border: 2px solid var(--ink);
+  border-bottom: 0;
+  border-radius: 0;
+  background: var(--card);
+  color: var(--ink);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.secondhand-tab + .secondhand-tab {
+  border-left: 0;
+}
+
+.secondhand-tab:first-child {
+  border-top-left-radius: 8px;
+}
+
+.secondhand-tab:last-child {
+  border-top-right-radius: 8px;
+}
+
+.secondhand-tab:hover {
+  background: var(--marker-soft);
+  color: var(--ink);
+}
+
+.secondhand-tab.is-active {
+  background: var(--marker);
+  color: var(--ink);
+}
+
+.secondhand-tab:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -5px;
+}
+
+.secondhand-panel {
+  margin-top: 0;
+  padding: 24px 28px;
+  border: 2px solid var(--ink);
+  border-radius: 0 0 5px 8px;
+  background: var(--card);
+  box-shadow: 4px 5px 0 var(--ink);
+}
+
+.secondhand-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px dashed var(--gray);
+}
+
+.secondhand-panel-heading h2 { margin: 0; font-size: 18px; }
+.secondhand-panel-heading span { color: var(--gray); font-size: 12px; }
+
+.secondhand-empty {
+  display: flex;
+  min-height: 320px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 36px 12px;
+  text-align: center;
+}
+
+.secondhand-empty-icon {
+  display: grid;
+  width: 66px;
+  height: 66px;
+  margin-bottom: 22px;
+  place-items: center;
+  border: 2px solid var(--ink);
+  border-radius: 16px 12px 18px 10px;
+  background: var(--marker-soft);
+  box-shadow: 3px 3px 0 var(--ink);
+  font-size: 28px;
+  transform: rotate(-5deg);
+}
+
+.secondhand-empty h3 { margin: 0 0 10px; font-size: 20px; }
+.secondhand-empty p { margin: 0; color: var(--gray); font-size: 14px; line-height: 1.8; }
+.secondhand-empty-label { margin-top: 24px; padding: 5px 14px; border: 1px dashed var(--gray); border-radius: 6px; color: var(--gray); font-size: 12px; }
+
+@media (max-width: 640px) {
+  .secondhand-page { margin: 12px 16px 32px; }
+  .secondhand-tabs { gap: 0; }
+  .secondhand-tab { min-height: 52px; gap: 6px; padding: 12px 16px; font-size: 14px; }
+  .secondhand-panel { padding: 18px 16px; }
+  .secondhand-empty { min-height: 300px; padding: 30px 0; }
+  .secondhand-empty h3 { font-size: 18px; }
+}

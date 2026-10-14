@@ -22,8 +22,9 @@ function getCartStatuses(item) {
 }
 
 function matchesFilter(item, filter) {
+  if (filter === 'purchased') return Boolean(item.purchased)
+  if (item.purchased) return false
   if (filter === 'all') return true
-  if (filter === 'purchased') return item.purchased
   if (filter === 'physical') return ['physical', 'either'].includes(item.format)
   if (filter === 'digital') return ['digital', 'either'].includes(item.format)
   if (filter.startsWith('status:')) return getCartStatuses(item).includes(filter.slice(7))
@@ -70,6 +71,7 @@ function CartPage({
   }, [searchQuery])
 
   const normalizedQuery = searchQuery.trim().toLocaleLowerCase('zh-Hant')
+  const unpurchasedCount = cartItems.filter((item) => !item.purchased).length
   const visibleItems = cartItems.filter((item) => {
     const linkedTitles = (item.relatedWorks ?? []).map((work) => work.title)
     const searchableText = [
@@ -169,7 +171,7 @@ function CartPage({
               key={filter.id}
               onClick={() => setActiveFilter(filter.id)}
             >
-              {filter.label}{filter.id === 'all' ? ` ${cartItems.length} 本` : ''}
+              {filter.label}{filter.id === 'all' ? ` ${unpurchasedCount} 本` : ''}
             </button>
           ))}
           <button className="filter-pill add-pill button-with-icon" type="button" onClick={openAddModal}>

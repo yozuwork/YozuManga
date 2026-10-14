@@ -9,6 +9,7 @@ import {
   updateBook,
 } from '../services/bookService.js'
 import { notionBookImportCandidates } from '../data/notionBookImport.js'
+import { findBookCoverPreset } from '../data/bookCoverPresets.js'
 import {
   addCategory,
   deleteCategory,
@@ -120,12 +121,48 @@ export default function useLibraryData() {
       externalLinksRequest,
     ])
       .then(([mangas, books, categoryList, statuses, shoppingCart, links]) => {
+        const defaultMangaStatus = statuses.find((status) => status.isDefault && status.types?.includes('manga'))
+          ?? statuses.find((status) => status.name === '追漫中' && status.types?.includes('manga'))
+
         setMangaList(mangas)
         setBookList(books)
         setCategories(categoryList)
         setReadingStatuses(statuses)
         setCartItems(shoppingCart)
         setExternalLinks(links)
+
+        // Migrate libraries seeded before `isDefault` was introduced. This only
+        // touches the existing, already-authorized readingStatuses collection.
+        if (defaultMangaStatus && !defaultMangaStatus.isDefault) {
+          updateStatus(defaultMangaStatus.id, { isDefault: true })
+            .catch(() => {})
+          setReadingStatuses((current) => current.map((status) => (
+            status.id === defaultMangaStatus.id ? { ...status, isDefault: true } : status
+          )))
+        }
+
+        // Fill in known covers for books that were saved without one.
+        const coverUpdates = books
+          .filter((book) => !book.coverUrl && findBookCoverPreset(book.title))
+          .map((book) => ({ id: book.id, coverUrl: findBookCoverPreset(book.title) }))
+        if (coverUpdates.length) {
+          coverUpdates.forEach(({ id, coverUrl }) => {
+            updateBook(id, { coverUrl }).catch(() => {})
+          })
+          setBookList((current) => current.map((book) => {
+            const update = coverUpdates.find((item) => item.id === book.id)
+            return update ? { ...book, coverUrl: update.coverUrl } : book
+          }))
+        }
+
+        if (import.meta.env.DEV) {
+          const missingCoverTitles = books
+            .filter((book) => !book.coverUrl && !findBookCoverPreset(book.title))
+            .map((book) => book.title)
+          console.info(
+            `[covers] ${books.length} books, ${missingCoverTitles.length} still missing a cover:\n${missingCoverTitles.join('\n')}`,
+          )
+        }
       })
       .catch((loadError) => {
         setError(loadError)

@@ -42,6 +42,11 @@ const tabs = [
 
 const moreTabs = [
   {
+    id: 'secondhand',
+    label: '二手書',
+    icon: <><path d="M4 5h7l2 2h7v13h-7l-2-2H4z" /><path d="M8 10h8M8 14h6" /></>,
+  },
+  {
     id: 'cats',
     label: '分類',
     icon: (

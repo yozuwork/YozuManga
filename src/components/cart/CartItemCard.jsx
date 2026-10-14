@@ -153,7 +153,7 @@ function CartItemCard({
         {!coverUrl && <span>{item.title}</span>}
         {coverPosition.isAdjusting && <span className="cover-position-hint">拖曳調整顯示範圍</span>}
         <div className="status-tags">
-          {itemStatuses.map((status) => (
+          {!item.purchased && itemStatuses.map((status) => (
             <span
               className={`tag ${readingStatuses.find((itemStatus) => itemStatus.name === status)?.color ?? 'marker'}`}
               key={status}

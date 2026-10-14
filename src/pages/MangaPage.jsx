@@ -26,7 +26,10 @@ function MangaPage({
   relatedWorks,
   onNavigateRelated,
 }) {
-  const [activeStatus, setActiveStatus] = useState('all')
+  const defaultMangaStatus = readingStatuses.find((status) => status.isDefault && status.types.includes('manga'))?.name
+    ?? readingStatuses.find((status) => status.name === '追漫中' && status.types.includes('manga'))?.name
+    ?? 'all'
+  const [activeStatus, setActiveStatus] = useState(defaultMangaStatus)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingManga, setEditingManga] = useState(null)
   const [isEditingCards, setIsEditingCards] = useState(false)
@@ -42,9 +45,9 @@ function MangaPage({
   useEffect(() => {
     const statusNames = mangaStatusKey ? mangaStatusKey.split('\u0000') : []
     if (activeStatus !== 'all' && !statusNames.includes(activeStatus)) {
-      setActiveStatus('all')
+      setActiveStatus(statusNames.includes(defaultMangaStatus) ? defaultMangaStatus : 'all')
     }
-  }, [activeStatus, mangaStatusKey])
+  }, [activeStatus, defaultMangaStatus, mangaStatusKey])
 
   useEffect(() => {
     if (searchQuery.trim()) setActiveStatus('all')
