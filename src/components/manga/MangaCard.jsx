@@ -1,7 +1,16 @@
 import './MangaCard.css'
-import { FiCornerUpRight, FiEdit3, FiGlobe, FiMove, FiPlay, FiTrash2 } from 'react-icons/fi'
+import { useEffect, useRef, useState } from 'react'
+import { FiChevronRight, FiCornerUpRight, FiEdit3, FiGlobe, FiMove, FiPlay, FiTrash2 } from 'react-icons/fi'
 import CardSelectionControl from '../common/CardSelectionControl.jsx'
 import useCoverPositionDrag from '../../hooks/useCoverPositionDrag.js'
+
+function getLinkHost(link) {
+  try {
+    return new URL(link).hostname.replace(/^www\./, '')
+  } catch {
+    return link
+  }
+}
 
 function MangaCard({
   manga,
@@ -14,9 +23,30 @@ function MangaCard({
   relatedWorks,
   onNavigateRelated,
   onUpdateCoverPosition,
+  onRead,
   editMode,
 }) {
   const coverPosition = useCoverPositionDrag(manga, onUpdateCoverPosition, editMode)
+  const [isLinkMenuOpen, setIsLinkMenuOpen] = useState(false)
+  const linkMenuRef = useRef(null)
+
+  useEffect(() => {
+    if (!isLinkMenuOpen) return undefined
+
+    function handlePointerDown(event) {
+      if (!linkMenuRef.current?.contains(event.target)) setIsLinkMenuOpen(false)
+    }
+    function handleKeyDown(event) {
+      if (event.key === 'Escape') setIsLinkMenuOpen(false)
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isLinkMenuOpen])
   const mangaStatuses = manga.statuses?.length ? manga.statuses : [manga.status].filter(Boolean)
   const mangaLinks = manga.links?.length ? manga.links : manga.link ? [manga.link] : []
   const serializationStatus = manga.serializationStatus
@@ -65,7 +95,7 @@ function MangaCard({
 
   return (
     <article
-      className={selected ? 'sticky card-selected' : 'sticky'}
+      className={['sticky', selected && 'card-selected', isLinkMenuOpen && 'link-menu-open'].filter(Boolean).join(' ')}
       role="button"
       tabIndex="0"
       aria-pressed={selectionMode ? selected : undefined}
@@ -160,22 +190,66 @@ function MangaCard({
             <span>{relatedWork.type === 'book' ? '實體書傳送門' : '追漫傳送門'}</span>
           </button>
         ))}
-        {mangaLinks.length > 0 && (
+        {mangaLinks.length === 1 && (
           <div className="read-links">
-            {mangaLinks.map((link, index) => (
-              <a
-                className="read-link-btn"
-                href={link}
-                target="_blank"
-                rel="noopener noreferrer"
-                key={`${link}-${index}`}
-                onClick={(event) => event.stopPropagation()}
-                onKeyDown={(event) => event.stopPropagation()}
-              >
-                <FiPlay aria-hidden="true" />
-                {mangaLinks.length > 1 ? `作品連結 ${index + 1}` : '閱讀漫畫'}
-              </a>
-            ))}
+            <a
+              className="read-link-btn"
+              href={mangaLinks[0]}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(event) => {
+                event.stopPropagation()
+                onRead?.(manga)
+              }}
+              onKeyDown={(event) => event.stopPropagation()}
+            >
+              <FiPlay aria-hidden="true" /> 閱讀漫畫
+            </a>
+          </div>
+        )}
+        {mangaLinks.length > 1 && (
+          <div className="read-links" ref={linkMenuRef}>
+            <button
+              className={isLinkMenuOpen ? 'read-link-btn open' : 'read-link-btn'}
+              type="button"
+              aria-haspopup="menu"
+              aria-expanded={isLinkMenuOpen}
+              onClick={(event) => {
+                event.stopPropagation()
+                setIsLinkMenuOpen((open) => !open)
+              }}
+              onKeyDown={(event) => event.stopPropagation()}
+            >
+              <FiPlay aria-hidden="true" /> 閱讀漫畫
+            </button>
+            {isLinkMenuOpen && (
+              <div className="read-link-menu" role="menu">
+                {mangaLinks.map((link, index) => (
+                  <a
+                    className="read-link-bubble"
+                    role="menuitem"
+                    href={link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    key={`${link}-${index}`}
+                    style={{ '--bubble-index': index }}
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      setIsLinkMenuOpen(false)
+                      onRead?.(manga)
+                    }}
+                    onKeyDown={(event) => event.stopPropagation()}
+                  >
+                    <span className="read-link-bubble-icon"><FiPlay aria-hidden="true" /></span>
+                    <span className="read-link-bubble-text">
+                      <strong>作品連結 {index + 1}</strong>
+                      <small>{getLinkHost(link)}</small>
+                    </span>
+                    <FiChevronRight className="read-link-bubble-arrow" aria-hidden="true" />
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
         )}
         <div className="card-progress-block">
@@ -183,6 +257,14 @@ function MangaCard({
             <span>已讀 {manga.current} 話</span>
             <span>{totalLabel}</span>
           </div>
+          {manga.extraProgress && (
+            <div className="extra-progress" title={manga.extraProgress}>
+              <span className={manga.extraWatched ? 'extra-watched yes' : 'extra-watched'}>
+                {manga.extraWatched ? '已看' : '未看'}
+              </span>
+              番外：{manga.extraProgress}
+            </div>
+          )}
           <div className="track" aria-label={`閱讀進度 ${progress}%`}>
             <i style={{ width: `${progress}%` }} />
           </div>

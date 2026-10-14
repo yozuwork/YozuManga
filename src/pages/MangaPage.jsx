@@ -11,6 +11,7 @@ import MangaModal from '../components/manga/MangaModal.jsx'
 import useCardSelection from '../hooks/useCardSelection.js'
 import useListDisplay from '../hooks/useListDisplay.js'
 import { getCardTemplates, saveCardTemplate } from '../utils/cardTemplates.js'
+import { getSavedMangaSort, MANGA_SORT_OPTIONS, saveMangaSort, sortMangaList } from '../utils/mangaSort.js'
 import './MangaPage.css'
 
 function MangaPage({
@@ -35,6 +36,7 @@ function MangaPage({
   const [isEditingCards, setIsEditingCards] = useState(false)
   const [isTemplateOpen, setIsTemplateOpen] = useState(false)
   const [cardTemplates, setCardTemplates] = useState(getCardTemplates)
+  const [sortBy, setSortBy] = useState(getSavedMangaSort)
   const { confirm, showMessage } = useDialog()
   const selection = useCardSelection(mangaList)
 
@@ -74,7 +76,9 @@ function MangaPage({
   const mangaCategories = categories
     .filter((category) => category.types.includes('manga'))
     .map((category) => category.name)
-  const display = useListDisplay(visibleManga, `${activeStatus}\u0000${normalizedQuery}`)
+  const sortedManga = sortMangaList(visibleManga, sortBy)
+  const isCustomSort = sortBy === 'custom'
+  const display = useListDisplay(sortedManga, `${activeStatus}\u0000${normalizedQuery}\u0000${sortBy}`)
 
   function openAddModal() {
     setEditingManga(null)
@@ -99,12 +103,18 @@ function MangaPage({
         ? 100
         : 0
 
+    const now = Date.now()
+
     try {
       if (editingManga) {
-        await onUpdateManga(editingManga.id, { ...formData, progress })
+        const timestamps = {
+          ...(Number(formData.current) > Number(editingManga.current ?? 0) ? { lastReadAt: now } : {}),
+          ...(Number(formData.total) > Number(editingManga.total ?? 0) ? { episodeUpdatedAt: now } : {}),
+        }
+        await onUpdateManga(editingManga.id, { ...formData, progress, ...timestamps })
         showMessage('追漫作品的變更已儲存。', { title: '儲存成功', variant: 'success' })
       } else {
-        await onAddManga({ ...formData, progress })
+        await onAddManga({ ...formData, progress, lastReadAt: now, episodeUpdatedAt: now })
         showMessage('新的追漫作品已貼上書架。', { title: '新增成功', variant: 'success' })
       }
       closeModal()
@@ -156,6 +166,15 @@ function MangaPage({
     }
   }
 
+  function changeSort(value) {
+    if (saveMangaSort(value)) setSortBy(value)
+  }
+
+  function markMangaRead(manga) {
+    // 點開閱讀連結就算看過；失敗時不打斷開啟連結。
+    onUpdateManga(manga.id, { lastReadAt: Date.now() }).catch(() => {})
+  }
+
   async function updateMangaCoverPosition(id, position) {
     try {
       await onUpdateManga(id, position)
@@ -201,9 +220,19 @@ function MangaPage({
         </div>
         <ListViewActions
           leadingAction={(
-            <button className="template-trigger" type="button" onClick={() => setIsTemplateOpen(true)}>
-              <FiCopy aria-hidden="true" /> 模板
-            </button>
+            <>
+              <label className="card-size-control sort-control">
+                <span>排序</span>
+                <select aria-label="排序方式" value={sortBy} onChange={(event) => changeSort(event.target.value)}>
+                  {MANGA_SORT_OPTIONS.map((option) => (
+                    <option value={option.value} key={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </label>
+              <button className="template-trigger" type="button" onClick={() => setIsTemplateOpen(true)}>
+                <FiCopy aria-hidden="true" /> 模板
+              </button>
+            </>
           )}
           value={display.mode}
           onChange={display.setMode}
@@ -236,7 +265,7 @@ function MangaPage({
 
       <SortableBoard
         items={display.displayItems}
-        disabled={selection.isSelecting}
+        disabled={selection.isSelecting || !isCustomSort}
         onReorder={reorderVisibleMangas}
         cardSize={display.cardSize}
       >
@@ -252,6 +281,7 @@ function MangaPage({
             relatedWorks={relatedWorks}
             onNavigateRelated={onNavigateRelated}
             onUpdateCoverPosition={updateMangaCoverPosition}
+            onRead={markMangaRead}
             editMode={isEditingCards}
           />
         )}

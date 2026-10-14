@@ -297,6 +297,154 @@
   margin-top: 10px;
 }
 
+/* 多個連結：按「閱讀漫畫」後在上方跳出對話泡泡選單 */
+.read-links {
+  position: relative;
+}
+
+button.read-link-btn {
+  width: 100%;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.read-link-btn.open {
+  background: #e0b93a;
+}
+
+.sticky.link-menu-open {
+  z-index: 40;
+}
+
+.sortable-card-shell:has(.sticky.link-menu-open) {
+  position: relative;
+  z-index: 40;
+}
+
+.read-link-menu {
+  position: absolute;
+  right: -6px;
+  bottom: calc(100% + 12px);
+  left: -6px;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  cursor: default;
+}
+
+.read-link-bubble {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px 8px 8px;
+  border: 2.5px solid var(--ink);
+  border-radius: 14px 10px 15px 9px;
+  background: var(--card);
+  box-shadow: 4px 4px 0 var(--marker);
+  color: var(--ink);
+  text-decoration: none;
+  transform-origin: 85% 100%;
+  animation: read-bubble-pop 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: calc(var(--bubble-index, 0) * 45ms);
+}
+
+.read-link-bubble:nth-child(odd) {
+  transform: rotate(-1.5deg);
+}
+
+.read-link-bubble:nth-child(even) {
+  transform: rotate(1deg);
+}
+
+/* 泡泡尾巴指向下方按鈕 */
+.read-link-bubble::after {
+  position: absolute;
+  right: 26px;
+  bottom: -11px;
+  width: 14px;
+  height: 14px;
+  border-right: 2.5px solid var(--ink);
+  border-bottom: 2.5px solid var(--ink);
+  background: var(--card);
+  content: '';
+  transform: skewX(-25deg) rotate(45deg);
+}
+
+.read-link-bubble:not(:last-child)::after {
+  display: none;
+}
+
+.read-link-bubble:hover,
+.read-link-bubble:focus-visible {
+  background: var(--marker-soft);
+}
+
+.read-link-bubble:hover::after,
+.read-link-bubble:focus-visible::after {
+  background: var(--marker-soft);
+}
+
+.read-link-bubble-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--marker);
+  font-size: 13px;
+}
+
+.read-link-bubble-text {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.read-link-bubble-text strong {
+  font-size: 12.5px;
+  font-weight: 900;
+}
+
+.read-link-bubble-text small {
+  overflow: hidden;
+  color: var(--gray);
+  font-size: 10px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.read-link-bubble-arrow {
+  flex: 0 0 auto;
+  color: var(--gray);
+}
+
+@keyframes read-bubble-pop {
+  from {
+    opacity: 0;
+    scale: 0.6;
+    translate: 0 12px;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+    translate: 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .read-link-bubble {
+    animation: none;
+  }
+}
+
 .related-work-btn {
   display: flex;
   width: 100%;
@@ -336,6 +484,31 @@
   margin-bottom: 6px;
   font-size: 11px;
   font-weight: 800;
+}
+
+.extra-progress {
+  overflow: hidden;
+  margin-bottom: 6px;
+  color: var(--gray);
+  font-size: 11px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.extra-watched {
+  display: inline-block;
+  margin-right: 5px;
+  padding: 0 5px;
+  border: 1.5px solid var(--ink);
+  border-radius: 5px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 0.9em;
+}
+
+.extra-watched.yes {
+  background: var(--marker);
 }
 
 .track {
@@ -439,7 +612,8 @@
     white-space: nowrap;
   }
 
-  .prow {
+  .prow,
+  .extra-progress {
     margin-bottom: 4px;
     font-size: 8px;
   }
@@ -469,6 +643,46 @@
 
   .read-links {
     gap: 4px;
+  }
+
+  .read-link-menu {
+    right: -4px;
+    left: -4px;
+    gap: 7px;
+  }
+
+  .read-link-bubble {
+    gap: 5px;
+    padding: 5px 6px 5px 5px;
+    border-width: 1.5px;
+    box-shadow: 2px 2px 0 var(--marker);
+  }
+
+  .read-link-bubble::after {
+    right: 16px;
+    bottom: -7px;
+    width: 9px;
+    height: 9px;
+    border-width: 1.5px;
+  }
+
+  .read-link-bubble-icon {
+    width: 20px;
+    height: 20px;
+    border-width: 1.5px;
+    font-size: 9px;
+  }
+
+  .read-link-bubble-text strong {
+    font-size: 9px;
+  }
+
+  .read-link-bubble-text small {
+    font-size: 7.5px;
+  }
+
+  .read-link-bubble-arrow {
+    display: none;
   }
 
   .read-links + .card-progress-block {

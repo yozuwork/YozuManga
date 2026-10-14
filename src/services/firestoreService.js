@@ -94,7 +94,6 @@ export function createCollectionService(collectionName) {
       ids.slice(offset, offset + 450).forEach((id, index) => {
         batch.update(doc(db, collectionName, id), {
           sortOrder: offset + index,
-          updatedAt: serverTimestamp(),
         })
       })
       await batch.commit()

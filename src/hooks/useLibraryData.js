@@ -183,13 +183,14 @@ export default function useLibraryData() {
 
   const createManga = useCallback(async (data) => {
     const created = await addManga({ ...data, sortOrder: -Date.now() })
-    setMangaList((list) => [created, ...list])
+    const now = Date.now()
+    setMangaList((list) => [{ ...created, createdAt: now, updatedAt: now }, ...list])
     return created
   }, [])
 
   const editManga = useCallback(async (id, data) => {
     await updateManga(id, data)
-    setMangaList((list) => replaceById(list, id, data))
+    setMangaList((list) => replaceById(list, id, { ...data, updatedAt: Date.now() }))
   }, [])
 
   const removeManga = useCallback(async (id) => {

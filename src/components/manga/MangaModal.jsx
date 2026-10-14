@@ -23,6 +23,8 @@ const EMPTY_FORM = {
   updateTime: '',
   current: '',
   total: '',
+  extraProgress: '',
+  extraWatched: 'no',
   serializationStatus: '連載中',
   links: [''],
   statuses: [],
@@ -57,6 +59,8 @@ function getInitialForm(manga, readingStatuses, defaultTemplate) {
         : getCurrentLocalDateTime(),
     current: manga.current ?? '',
     total: manga.total ?? '',
+    extraProgress: manga.extraProgress ?? '',
+    extraWatched: manga.extraWatched ? 'yes' : 'no',
     serializationStatus: manga.serializationStatus
       ?? ((manga.statuses ?? [manga.status]).includes('已完結') ? '已完結' : '連載中'),
     links: manga.links?.length ? manga.links : manga.link ? [manga.link] : [''],
@@ -328,6 +332,8 @@ function MangaModal({
       updateTimeMode: keepManualUpdateTime ? 'manual' : 'auto',
       current: Number.parseInt(form.current, 10) || 0,
       total: form.total === '' ? null : Number.parseInt(form.total, 10) || 0,
+      extraProgress: form.extraProgress.trim(),
+      extraWatched: form.extraWatched === 'yes',
       serializationStatus: form.serializationStatus,
       links,
       link: links[0] ?? '',
@@ -525,6 +531,31 @@ function MangaModal({
                   placeholder="例如：120"
                   onChange={handleFieldChange}
                 />
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="form-field">
+                <label htmlFor="manga-extra-progress">番外進度（不計入進度條）</label>
+                <input
+                  id="manga-extra-progress"
+                  name="extraProgress"
+                  value={form.extraProgress}
+                  placeholder="例如：番外 3、Extra 2"
+                  onChange={handleFieldChange}
+                />
+              </div>
+              <div className="form-field">
+                <label htmlFor="manga-extra-watched">是否觀看此番外</label>
+                <select
+                  id="manga-extra-watched"
+                  name="extraWatched"
+                  value={form.extraWatched}
+                  onChange={handleFieldChange}
+                >
+                  <option value="no">尚未觀看</option>
+                  <option value="yes">已觀看</option>
+                </select>
               </div>
             </div>
 

@@ -65,6 +65,14 @@
     display: none;
   }
 
+  .card-size-control.sort-control {
+    display: inline-flex;
+  }
+
+  .sort-control > span {
+    display: none;
+  }
+
   .list-view-actions {
     width: 100%;
     flex-wrap: nowrap;
